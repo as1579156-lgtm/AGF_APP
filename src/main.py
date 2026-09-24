@@ -892,7 +892,6 @@ trailing=ft.Icon(
                 ),
             ),
 			
-
     # 오른쪽 Drawer 연결
     page.end_drawer = drawer
 
