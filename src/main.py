@@ -891,19 +891,7 @@ trailing=ft.Icon(
                     ft.Icons.OPEN_IN_NEW,
                 ),
             ),
-
-            ft.ListTile(
-                leading=ft.Icon(
-                    ft.Icons.SETTINGS_OUTLINED,
-                ),
-                title=ft.Text("앱 설정"),
-                trailing=ft.Icon(
-                    ft.Icons.CHEVRON_RIGHT,
-                ),
-                on_click=app_settings_clicked,
-            ),
-        ],
-    )
+			
 
     # 오른쪽 Drawer 연결
     page.end_drawer = drawer
