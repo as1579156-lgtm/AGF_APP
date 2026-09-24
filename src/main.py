@@ -275,14 +275,15 @@ def fetch_sns_news():
                 if not title or not link:
                     continue
                 
-				# X는 2026년 게시물만 표시
-                if sub_category == "X":
+				# X는 날짜가 확인되면 2026년 자료만 표시
+                # 날짜가 없는 자료는 일단 표시
+                if sub_category == "X" and pub_date:
                     try:
                         parsed_date = parsedate_to_datetime(pub_date)
                         if parsed_date.year != CURRENT_YEAR:
                             continue
                     except Exception:
-                        continue
+                        pass
 
                 if any(year in title for year in old_years):
                     continue
