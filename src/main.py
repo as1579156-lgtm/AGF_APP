@@ -285,9 +285,6 @@ def fetch_sns_news():
                     except Exception:
                         pass
 
-                if any(year in title for year in old_years):
-                    continue
-
                 news_items.append(
                     {
                         "title": title,
