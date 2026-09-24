@@ -1193,7 +1193,7 @@ content=ft.Text(
                                         text="日本語",
                                     ),
                                 ],
-                                on_change=language_changed,
+                                
                             ),
                         ],
                     ),
