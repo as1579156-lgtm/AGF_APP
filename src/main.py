@@ -876,6 +876,17 @@ trailing=ft.Icon(
                 ),
                 on_click=official_instagram_clicked,
             ),
+			
+            ft.ListTile(
+                leading=ft.Icon(
+                    ft.Icons.HELP_OUTLINE,
+                ),
+                 title=ft.Text("테스트버전 문의"),
+                url="https://naver.me/G6RXO3S9",
+                trailing=ft.Icon(
+                    ft.Icons.OPEN_IN_NEW,
+                ),
+            ),
 
             ft.ListTile(
                 leading=ft.Icon(
