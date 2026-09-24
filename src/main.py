@@ -410,7 +410,8 @@ def main(page: ft.Page):
     news_category = "공지"
     news_sub_category = "X"
     all_news_items = []
-
+    current_language = "한국어"
+	
     # main.py와 같은 폴더에 저장
     save_file = Path(__file__).with_name("agf_settings.json")
 
@@ -424,6 +425,8 @@ def main(page: ft.Page):
             saved = settings.get("saved", False)
             seen_news = settings.get("seen_news", [])
             notifications_enabled = settings.get(
+
+				
                 "notifications_enabled",
                 True,
             )
@@ -431,15 +434,133 @@ def main(page: ft.Page):
                 "news_initialized",
                 False,
             )
+
+            current_language = settings.get(
+                "language",
+                "한국어",
+            )
+
+            if current_language not in [
+                "한국어",
+                "English",
+                "日本語",
+            ]:
+                current_language = "한국어"
+				
         except (json.JSONDecodeError, OSError):
             saved = False
             seen_news = []
             notifications_enabled = True
             news_initialized = False
-
-    page.title = AGF_TITLE    
+            current_language = "한국어"
+    page.title = AGF_TITLE
     page.bgcolor = "#FFFFFF"
     page.padding = 0
+
+    TRANSLATIONS = {
+        "한국어": {
+            "app_title": "AGF 2026 정보",
+            "home": "홈",
+            "news": "뉴스",
+            "stage": "스테이지",
+            "booth": "부스",
+            "settings": "설정",
+            "settings_title": "앱 설정",
+            "notification": "알림",
+            "auto_news": "새소식 자동 확인",
+            "auto_news_desc": "AGF 2026의 새로운 소식을 자동으로 확인합니다.",
+            "language": "언어",
+            "app_info": "앱 정보",
+            "version": "버전",
+            "beta_contact": "테스트버전 문의",
+            "beta_contact_desc": "베타 테스트 중 오류나 의견을 알려주세요.",
+            "agf_news": "AGF 뉴스",
+            "refresh": "새로고침",
+            "notice": "공지",
+            "event_news": "행사소식",
+            "sns": "SNS",
+            "public": "공개",
+            "instagram": "Instagram",
+            "guest": "게스트",
+            "participant": "참가사",
+			"official_page": "공식 페이지 확인",
+"loading_notice": "공식 공지를 확인하는 중...",
+"no_news_title": "새로운 소식이 없습니다.",
+"no_news_desc": "현재 선택한 카테고리에 등록된 소식이 없습니다.",
+        },
+
+		
+        "English": {
+            "app_title": "AGF 2026 Info",
+            "home": "Home",
+            "news": "News",
+            "stage": "Stage",
+            "booth": "Booth",
+            "settings": "Settings",
+            "settings_title": "App Settings",
+            "notification": "Notifications",
+            "auto_news": "Check for new updates",
+            "auto_news_desc": "Automatically check for new AGF 2026 updates.",
+            "language": "Language",
+            "app_info": "App Info",
+            "version": "Version",
+            "beta_contact": "Beta Test Feedback",
+            "beta_contact_desc": "Report bugs or share feedback during beta testing.",
+            "agf_news": "AGF News",
+            "refresh": "Refresh",
+            "notice": "Notices",
+            "event_news": "Event News",
+            "sns": "SNS",
+            "public": "Public",
+            "instagram": "Instagram",
+            "guest": "Guests",
+            "participant": "Participants",
+			"official_page": "View Official Page",
+"loading_notice": "Checking official notices...",
+"no_news_title": "No new updates.",
+"no_news_desc": "There are no updates in the selected category.",
+        },
+
+        "日本語": {
+            "app_title": "AGF 2026 情報",
+            "home": "ホーム",
+            "news": "ニュース",
+            "stage": "ステージ",
+            "booth": "ブース",
+            "settings": "設定",
+            "settings_title": "アプリ設定",
+            "notification": "通知",
+            "auto_news": "新着情報を自動確認",
+            "auto_news_desc": "AGF 2026の新しい情報を自動で確認します。",
+            "language": "言語",
+            "app_info": "アプリ情報",
+            "version": "バージョン",
+            "beta_contact": "ベータ版のお問い合わせ",
+            "beta_contact_desc": "ベータテスト中の不具合やご意見をお知らせください。",
+            "agf_news": "AGF ニュース",
+            "refresh": "更新",
+            "notice": "お知らせ",
+            "event_news": "イベント情報",
+            "sns": "SNS",
+            "public": "公開",
+            "instagram": "Instagram",
+            "guest": "ゲスト",
+            "participant": "参加者",
+			"official_page": "公式ページを確認",
+"loading_notice": "公式のお知らせを確認しています...",
+"no_news_title": "新しい情報はありません。",
+"no_news_desc": "現在選択したカテゴリーに登録された情報はありません。",	
+        },
+    }
+
+    def t(key):
+        return TRANSLATIONS.get(
+            current_language,
+            TRANSLATIONS["한국어"],
+        ).get(
+            key,
+            key,
+        )
 
        # 설정 저장
     def save_settings():
@@ -448,6 +569,7 @@ def main(page: ft.Page):
             "seen_news": seen_news,
             "notifications_enabled": notifications_enabled,
             "news_initialized": news_initialized,
+            "language": current_language,
         }
         save_file.write_text(
             json.dumps(
@@ -604,10 +726,10 @@ def main(page: ft.Page):
     # AppBar 설정
     def set_appbar(index):
         titles = {
-            1: "AGF 뉴스",
-            2: "스테이지",
-            3: "AGF 부스",
-            4: "앱 설정",
+            1: t("news"),
+            2: t("stage"),
+            3: t("booth"),
+            4: t("settings"),
         }
 
         # 홈 화면
@@ -618,7 +740,7 @@ def main(page: ft.Page):
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     controls=[
                         ft.Text(
-                            AGF_TITLE,
+                            t("app_title"),
                             size=21,
                             weight=ft.FontWeight.BOLD,
                             text_align=ft.TextAlign.CENTER,
@@ -917,6 +1039,24 @@ trailing=ft.Icon(
                 "ON" if notifications_enabled else "OFF",
             )
 
+        def language_changed(e):
+            nonlocal current_language
+
+            current_language = e.control.value
+            save_settings()
+
+            page.title = t("app_title")
+
+            navigation.destinations[0].label = t("home")
+            navigation.destinations[1].label = t("news")
+            navigation.destinations[2].label = t("stage")
+            navigation.destinations[3].label = t("booth")
+            navigation.destinations[4].label = t("settings")
+
+            change_page(
+                index=navigation.selected_index
+            )
+
         return ft.Column(
             expand=True,
             scroll=ft.ScrollMode.AUTO,
@@ -931,11 +1071,11 @@ trailing=ft.Icon(
                         top=20,
                         bottom=16,
                     ),
-                    content=ft.Text(
-                        "앱 설정",
-                        size=26,
-                        weight=ft.FontWeight.BOLD,
-                    ),
+content=ft.Text(
+    t("settings_title"),
+    size=26,
+    weight=ft.FontWeight.BOLD,
+),                    
                 ),
 
                 # 알림
@@ -947,7 +1087,7 @@ trailing=ft.Icon(
                         bottom=8,
                     ),
                     content=ft.Text(
-                        "알림",
+                        t("notification"),
                         size=13,
                         color="#777777",
                         weight=ft.FontWeight.BOLD,
@@ -967,11 +1107,11 @@ trailing=ft.Icon(
                             ft.Icons.NOTIFICATIONS_OUTLINED,
                         ),
                         title=ft.Text(
-                            "새소식 자동 확인",
+                            t("auto_news"),
                             size=16,
                         ),
                         subtitle=ft.Text(
-                            "AGF 2026의 새로운 소식을 자동으로 확인합니다.",
+                            t("auto_news_desc"),
                             size=13,
                         ),
                         trailing=ft.Switch(
@@ -981,7 +1121,7 @@ trailing=ft.Icon(
                     ),
                 ),
 
-                # 일반
+                # 언어
                 ft.Container(
                     padding=ft.Padding(
                         left=20,
@@ -990,7 +1130,7 @@ trailing=ft.Icon(
                         bottom=8,
                     ),
                     content=ft.Text(
-                        "일반",
+                        t("language"),
                         size=13,
                         color="#777777",
                         weight=ft.FontWeight.BOLD,
@@ -1005,44 +1145,55 @@ trailing=ft.Icon(
                     ),
                     border_radius=14,
                     bgcolor="#F5F5F5",
-                    content=ft.Column(
-                        spacing=0,
+                    padding=ft.Padding(
+                        left=16,
+                        right=16,
+                        top=8,
+                        bottom=8,
+                    ),
+                    content=ft.Row(
+                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                         controls=[
-
-                            ft.ListTile(
-                                leading=ft.Icon(
-                                    ft.Icons.SAVE_OUTLINED,
-                                ),
-                                title=ft.Text(
-                                    "설정 저장",
-                                    size=16,
-                                ),
-                                subtitle=ft.Text(
-                                    "알림 설정이 자동으로 저장됩니다.",
-                                    size=13,
-                                ),
+                            ft.Row(
+                                spacing=12,
+                                controls=[
+                                    ft.Icon(
+                                        ft.Icons.LANGUAGE,
+                                    ),
+                                    ft.Column(
+                                        spacing=2,
+                                        controls=[
+                                            ft.Text(
+                                                t("language"),
+                                                size=16,
+                                            ),
+                                            ft.Text(
+                                                "한국어 / English / 日本語",
+                                                size=13,
+                                                color="#666666",
+                                            ),
+                                        ],
+                                    ),
+                                ],
                             ),
-
-                            ft.Divider(
-                                height=1,
-                            ),
-
-                            ft.ListTile(
-                                leading=ft.Icon(
-                                    ft.Icons.INFO_OUTLINED,
-                                ),
-                                title=ft.Text(
-                                    "행사 정보",
-                                    size=16,
-                                ),
-                                subtitle=ft.Text(
-                                    "행사 일정 및 행사 안내는 메뉴에서 확인할 수 있습니다.",
-                                    size=13,
-                                ),
-                                trailing=ft.Icon(
-                                    ft.Icons.CHEVRON_RIGHT,
-                                ),
-                                on_click=event_info_clicked,
+                            ft.Dropdown(
+                                value=current_language,
+                                width=130,
+                                options=[
+                                    ft.DropdownOption(
+                                        key="한국어",
+                                        text="한국어",
+                                    ),
+                                    ft.DropdownOption(
+                                        key="English",
+                                        text="English",
+                                    ),
+                                    ft.DropdownOption(
+                                        key="日本語",
+                                        text="日本語",
+                                    ),
+                                ],
+                                on_change=language_changed,
                             ),
                         ],
                     ),
@@ -1057,7 +1208,7 @@ trailing=ft.Icon(
                         bottom=8,
                     ),
                     content=ft.Text(
-                        "앱 정보",
+                        t("app_info"),
                         size=13,
                         color="#777777",
                         weight=ft.FontWeight.BOLD,
@@ -1099,7 +1250,7 @@ trailing=ft.Icon(
                                     ft.Icons.INFO_OUTLINED,
                                 ),
                                 title=ft.Text(
-                                    "버전",
+                                t("version"),    
                                     size=16,
                                 ),
                                 trailing=ft.Text(
@@ -1107,6 +1258,27 @@ trailing=ft.Icon(
                                     size=14,
                                     color="#777777",
                                 ),
+                            ),	
+                            ft.Divider(
+                                height=1,
+                            ),
+
+                            ft.ListTile(
+                                leading=ft.Icon(
+                                    ft.Icons.HELP_OUTLINE,
+                                ),
+                                title=ft.Text(
+                                    t("beta_contact"),
+                                    size=16,
+                                ),
+                                subtitle=ft.Text(
+                                    t("beta_contact_desc"),
+                                    size=13,
+                                ),
+                                trailing=ft.Icon(
+                                    ft.Icons.OPEN_IN_NEW,
+                                ),
+                                url="https://naver.me/G6RXO3S9",
                             ),
                         ],
                     ),
@@ -1114,6 +1286,7 @@ trailing=ft.Icon(
             ],
         )
 
+		
     # 뉴스 카드
     def build_news_card(item):
         controls = [
@@ -1135,7 +1308,7 @@ trailing=ft.Icon(
 
         controls.append(
             ft.Button(
-                "공식 페이지 확인",
+                t("official_page"),
                 icon=ft.Icons.OPEN_IN_NEW,
                 url=item["url"],
             )
@@ -1206,12 +1379,12 @@ trailing=ft.Icon(
                     content=ft.Column(
                         controls=[
                             ft.Text(
-                                "새로운 소식이 없습니다.",
+                                t("no_news_title"),
                                 size=18,
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.Text(
-                                "현재 선택한 카테고리에 등록된 소식이 없습니다.",
+                                t("no_news_desc"),
                                 size=14,
                             ),
                         ],
@@ -1232,27 +1405,27 @@ trailing=ft.Icon(
         ft.NavigationBarDestination(
             icon=ft.Icons.HOME_OUTLINED,
             selected_icon=ft.Icons.HOME,
-            label="홈",
+            label=t("home"),
         ),
         ft.NavigationBarDestination(
             icon=ft.Icons.NEWSPAPER_OUTLINED,
             selected_icon=ft.Icons.NEWSPAPER,
-            label="뉴스",
+            label=t("news"),
         ),
         ft.NavigationBarDestination(
             icon=ft.Icons.MIC_OUTLINED,
             selected_icon=ft.Icons.MIC,
-            label="스테이지",
+            label=t("stage"),
         ),
         ft.NavigationBarDestination(
             icon=ft.Icons.STORE_OUTLINED,
             selected_icon=ft.Icons.STORE,
-            label="부스",
+            label=t("booth"),
         ),
         ft.NavigationBarDestination(
             icon=ft.Icons.SETTINGS_OUTLINED,
             selected_icon=ft.Icons.SETTINGS,
-            label="설정",
+            label=t("settings"),
         ),
     ],
 )
@@ -1694,10 +1867,10 @@ trailing=ft.Icon(
                             scrollable=True,
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
-                            tabs=[
-                                ft.Tab(label="X"),
-                                ft.Tab(label="Instagram"),
-                            ],
+tabs=[
+    ft.Tab(label="X"),
+    ft.Tab(label=t("instagram")),
+],	
                         ),
                     ],
                 ),
@@ -1727,8 +1900,8 @@ trailing=ft.Icon(
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
                             tabs=[
-                                ft.Tab(label="게스트"),
-                                ft.Tab(label="참가사"),
+                                ft.Tab(label=t("guest")),
+                                ft.Tab(label=t("participant")),
                             ],
                         ),
                     ],
@@ -1791,7 +1964,7 @@ trailing=ft.Icon(
                 spacing=10,
                 controls=[
                     ft.Text(
-                        "공식 공지를 확인하는 중...",
+                        t("loading_notice"),
                         size=14,
                     )
                 ],
@@ -1808,10 +1981,10 @@ trailing=ft.Icon(
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=3,
                             tabs=[
-                                ft.Tab(label="공지"),
-                                ft.Tab(label="행사소식"),
-                                ft.Tab(label="SNS"),
-                                ft.Tab(label="공개"),
+                                ft.Tab(label=t("notice")),
+                                ft.Tab(label=t("event_news")),
+                                ft.Tab(label=t("sns")),
+                                ft.Tab(label=t("public")),
                             ],
                         ),
                     ],
@@ -1833,12 +2006,12 @@ trailing=ft.Icon(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
                             controls=[
                                 ft.Text(
-                                    "AGF 뉴스",
+                                    t("agf_news"),
                                     size=26,
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 ft.Button(
-                                    "새로고침",
+                                    t("refresh"),
                                     icon=ft.Icons.REFRESH,
                                     on_click=refresh_news,
                                 ),
