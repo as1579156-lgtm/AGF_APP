@@ -21,7 +21,7 @@ import webbrowser
 # ==============================
 
 CURRENT_YEAR = date.today().year
-AGF_TITLE = f"AGF {CURRENT_YEAR}"
+AGF_TITLE = f"AGF {CURRENT_YEAR} 정보"
 # 참가사 정보
 # 실제 공식 참가사 정보 공개 후 데이터 추가
 participants = []
