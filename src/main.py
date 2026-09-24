@@ -2849,7 +2849,7 @@ trailing=ft.Icon(
 
         page.show_dialog(dialog)
 
-	  show_beta_dialog()
+    show_beta_dialog()
 		
     refresh_home_sns()
 
