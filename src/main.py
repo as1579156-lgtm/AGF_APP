@@ -2823,7 +2823,34 @@ trailing=ft.Icon(
     page.run_task(auto_refresh_news)
 
     page.add(content_area)
+	
+    # 베타 테스트 안내 팝업
+    def show_beta_dialog():
+        dialog = ft.AlertDialog(
+            title=ft.Text(
+                "🧪 AGF 2026 베타 테스트",
+                weight=ft.FontWeight.BOLD,
+            ),
+            content=ft.Text(
+                "현재 이 앱은 베타 테스트 버전입니다.\n\n"
+                "일부 기능이나 정보가 변경되거나 "
+                "오류가 발생할 수 있습니다.\n\n"
+                "불편사항이나 오류는 "
+                "「테스트버전 문의」를 통해 알려주세요.",
+                size=15,
+            ),
+            actions=[
+                ft.TextButton(
+                    "닫기",
+                    on_click=lambda e: page.pop_dialog(),
+                ),
+            ],
+        )
 
+        page.show_dialog(dialog)
+
+	  show_beta_dialog()
+		
     refresh_home_sns()
 
 app = ft.run(main, export_asgi_app=True)
