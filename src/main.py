@@ -274,12 +274,15 @@ def fetch_sns_news():
 
                 if not title or not link:
                     continue
-
-                # 오래된 AGF 연도 게시물 제외
-                old_years = (
-                    "2019", "2020", "2021",
-                    "2022", "2023", "2024", "2025"
-                )
+                
+				# X는 2026년 게시물만 표시
+                if sub_category == "X":
+                    try:
+                        parsed_date = parsedate_to_datetime(pub_date)
+                        if parsed_date.year != CURRENT_YEAR:
+                            continue
+                    except Exception:
+                        continue
 
                 if any(year in title for year in old_years):
                     continue
