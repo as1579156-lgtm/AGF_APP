@@ -1110,7 +1110,7 @@ trailing=ft.Icon(
                                     size=16,
                                 ),
                                 trailing=ft.Text(
-                                    "1.0.0",
+                                   "1.0.0 · 베타 테스트",
                                     size=14,
                                     color="#777777",
                                 ),
