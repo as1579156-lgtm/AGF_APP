@@ -877,17 +877,22 @@ trailing=ft.Icon(
                 ),
                 on_click=official_instagram_clicked,
             ),
-			
-            ft.ListTile(
+
+			            ft.ListTile(
                 leading=ft.Icon(
                     ft.Icons.HELP_OUTLINE,
                 ),
-                 title=ft.Text("테스트버전 문의"),
+                title=ft.Text("테스트버전 문의"),
                 url="https://naver.me/G6RXO3S9",
                 trailing=ft.Icon(
                     ft.Icons.OPEN_IN_NEW,
                 ),
             ),
+
+        ],
+    )
+
+    # 오른쪽 Drawer 연결
 			
     # 오른쪽 Drawer 연결
     page.end_drawer = drawer
