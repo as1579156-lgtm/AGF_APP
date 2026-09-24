@@ -2828,7 +2828,7 @@ trailing=ft.Icon(
     def show_beta_dialog():
         dialog = ft.AlertDialog(
             title=ft.Text(
-                "🧪 AGF 2026 베타 테스트",
+                "🧪 AGF 2026 정보 베타 테스트",
                 weight=ft.FontWeight.BOLD,
             ),
             content=ft.Text(
