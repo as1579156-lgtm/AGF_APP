@@ -204,21 +204,6 @@ def fetch_sns_news():
                     if word.upper() not in allowed_english
                 ]
 
-                if invalid_english:
-                    continue
-
-                    if unicodedata.category(char)[0] in ("P", "S"):
-                        continue
-
-                    invalid_language = True
-                    break
-
-                if not has_korean:
-                    continue
-
-                if invalid_language:
-                    continue
-
                 news_items.append({
                     "title": title,
                     "url": link,
