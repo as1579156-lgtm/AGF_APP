@@ -180,50 +180,6 @@ def fetch_agf_news():
         )
 
     return news_items
-def fetch_event_news():
-    return [
-        {
-            "title": "AGF 2026 행사 개요",
-            "url": "https://www.agfkorea.com/event?idx=1",
-            "category": "행사소식",
-            "sub_category": "행사",
-            "date": "2026",
-            "source": "AGF 공식",
-        },
-        {
-            "title": "AGF 2026 행사 구성",
-            "url": "https://www.agfkorea.com/event?idx=2",
-            "category": "행사소식",
-            "sub_category": "행사",
-            "date": "2026",
-            "source": "AGF 공식",
-        },
-        {
-            "title": "AGF 2026 행사장 배치도",
-            "url": "https://www.agfkorea.com/event?idx=3",
-            "category": "행사소식",
-            "sub_category": "행사",
-            "date": "2026",
-            "source": "AGF 공식",
-        },
-        {
-            "title": "AGF 2026 행사 이용안내",
-            "url": "https://www.agfkorea.com/event?idx=4",
-            "category": "행사소식",
-            "sub_category": "행사",
-            "date": "2026",
-            "source": "AGF 공식",
-        },
-        {
-            "title": "AGF 2026 오시는 길",
-            "url": "https://www.agfkorea.com/event?idx=5",
-            "category": "행사소식",
-            "sub_category": "행사",
-            "date": "2026",
-            "source": "AGF 공식",
-        },
-    ]
-
 
 def fetch_sns_news():
     news_items = []
@@ -275,7 +231,7 @@ def fetch_sns_news():
                 if not title or not link:
                     continue
                 
-				# X는 날짜가 확인되면 2026년 자료만 표시
+                # X는 날짜가 확인되면 2026년 자료만 표시
                 # 날짜가 없는 자료는 일단 표시
                 if sub_category == "X" and pub_date:
                     try:
@@ -384,14 +340,10 @@ def fetch_all_news():
         print("공식 뉴스 처리 실패:", e)
 
     try:
-        all_items.extend(fetch_event_news())
-    except Exception as e:
-        print("행사소식 처리 실패:", e)
-
-    try:
         all_items.extend(fetch_sns_news())
     except Exception as e:
         print("SNS 뉴스 처리 실패:", e)
+
     try:
         public_items = fetch_public_news()
         all_items.extend(public_items)
@@ -407,11 +359,12 @@ def main(page: ft.Page):
     notifications_enabled = True
     news_initialized = False
 
-    news_category = "공지"
+    news_category = "SNS"
     news_sub_category = "X"
     all_news_items = []
     current_language = "한국어"
-	
+    current_index = 0
+    
     # main.py와 같은 폴더에 저장
     save_file = Path(__file__).with_name("agf_settings.json")
 
@@ -426,7 +379,7 @@ def main(page: ft.Page):
             seen_news = settings.get("seen_news", [])
             notifications_enabled = settings.get(
 
-				
+                
                 "notifications_enabled",
                 True,
             )
@@ -446,13 +399,14 @@ def main(page: ft.Page):
                 "日本語",
             ]:
                 current_language = "한국어"
-				
+                
         except (json.JSONDecodeError, OSError):
             saved = False
             seen_news = []
             notifications_enabled = True
             news_initialized = False
             current_language = "한국어"
+
     page.title = AGF_TITLE
     page.bgcolor = "#FFFFFF"
     page.padding = 0
@@ -474,6 +428,8 @@ def main(page: ft.Page):
             "version": "버전",
             "beta_contact": "테스트버전 문의",
             "beta_contact_desc": "베타 테스트 중 오류나 의견을 알려주세요.",
+            "unofficial_notice": "비공식 팬메이드 앱",
+            "unofficial_notice_desc": "본 앱은 AGF 2026 조직위원회 및 AGF Korea와 공식적인 제휴·운영 관계가 없습니다.",
             "agf_news": "AGF 뉴스",
             "refresh": "새로고침",
             "notice": "공지",
@@ -483,13 +439,73 @@ def main(page: ft.Page):
             "instagram": "Instagram",
             "guest": "게스트",
             "participant": "참가사",
-			"official_page": "공식 페이지 확인",
-"loading_notice": "공식 공지를 확인하는 중...",
-"no_news_title": "새로운 소식이 없습니다.",
-"no_news_desc": "현재 선택한 카테고리에 등록된 소식이 없습니다.",
+            "notification_alert": "AGF 알림",
+            "notification_on": "새소식 자동 확인: ON",
+            "notification_off": "새소식 자동 확인: OFF",
+            "notification_desc": "새 공지가 올라오면 뉴스 화면에서 확인할 수 있습니다.",
+            "confirm": "확인",
+            "menu": "메뉴",
+            "home": "홈",
+            "previous": "이전",
+            "next": "다음",
+            "latest_sns": "SNS 최신 소식",
+            "sns_loading": "SNS 소식을 불러오는 중...",
+            "sns_empty": "새로운 SNS 소식이 없습니다.",
+            "sns_error": "SNS 소식을 불러오지 못했습니다.",
+            "ticket": "티켓 예매",
+            "ticket_desc": "AGF 2026 티켓을 예매하세요.",
+            "sponsor": "메인 스폰서 & 스폰서",
+            "sponsor_desc": "AGF 2026의 메인 스폰서와 참가 스폰서를 확인하세요.",
+            "sponsor_empty": "스폰서 정보 공개 후 업데이트 예정",
+            "guest_card": "게스트",
+            "guest_desc": "AGF 2026 공식 게스트 정보를 확인하세요.",
+            "guest_empty": "게스트 정보 공개 후 업데이트 예정",
+            "stage_card": "스테이지",
+            "stage_desc": "AGF 2026 스테이지 일정을 확인하세요.",
+            "stage_empty": "스테이지 정보 공개 후 업데이트 예정",
+            "home_back": "홈으로",
+            "event_schedule": "행사 일정",
+            "venue_info": "행사장 안내",
+            "event_info": "행사 정보",
+            "event_guide": "행사 안내",
+            "official_channel": "공식 채널",
+            "official_homepage": "공식 홈페이지",
+            "official_x": "공식 X",
+            "official_instagram": "공식 Instagram",
+            "stage_guest": "AGF 2026 공식 게스트",
+            "schedule_empty": "출연 일정 정보가 없습니다.",
+            "guest_intro": "게스트 소개",
+            "stage_appearances": "출연 스테이지",
+            "stage_image_loading": "스테이지 이미지 준비 중",
+            "stage_title": "AGF 스테이지",
+            "stage_desc_main": "스테이지와 날짜를 선택해 일정을 확인하세요.",
+            "booth_title": "AGF 부스",
+            "booth_desc": "참가사 · 부스 · 배치도",
+            "booth_intro": "공식 참가사와 부스 정보가 공개되면 이곳에서 확인할 수 있습니다.",
+            "participant_search": "참가사 검색",
+            "participant_info": "참가사 정보",
+            "participant_empty": "공식 참가사 정보가 아직 공개되지 않았습니다.",
+            "search_empty": "검색 결과가 없습니다.",
+            "booth_map": "부스 & 배치도",
+            "booth_map_desc": "부스 번호와 참가사를 확인할 수 있습니다.",
+            "booth_list": "부스 목록",
+            "booth_empty": "공식 참가사 및 부스 정보가 아직 공개되지 않았습니다.",
+            "booth_update": "※ 실제 배치도와 참가사 정보 공개 후 업데이트됩니다.",
+            "booth_number": "부스 번호",
+            "official_update_pending": "참가사 상세 정보는 공식 자료 공개 후 업데이트할 예정입니다.",
+            "map_load_error": "배치도 이미지를 불러오지 못했습니다.",
+            "map_pending": "AGF 2026 부스 배치도",
+            "map_update_pending": "실제 배치도 공개 후 업데이트 예정",
+            "beta_test": "베타 테스트",
+            "beta_test_done": "1.0.0 · 베타 테스트",
+            "close": "닫기",
+            "official_page": "공식 페이지 확인",
+            "loading_notice": "공식 공지를 확인하는 중...",
+            "no_news_title": "새로운 소식이 없습니다.",
+            "no_news_desc": "현재 선택한 카테고리에 등록된 소식이 없습니다.",
         },
 
-		
+        
         "English": {
             "app_title": "AGF 2026 Info",
             "home": "Home",
@@ -506,6 +522,8 @@ def main(page: ft.Page):
             "version": "Version",
             "beta_contact": "Beta Test Feedback",
             "beta_contact_desc": "Report bugs or share feedback during beta testing.",
+            "unofficial_notice": "Unofficial Fan-Made App",
+            "unofficial_notice_desc": "This app is not officially affiliated with or operated by the AGF 2026 Organizing Committee or AGF Korea.",
             "agf_news": "AGF News",
             "refresh": "Refresh",
             "notice": "Notices",
@@ -515,10 +533,69 @@ def main(page: ft.Page):
             "instagram": "Instagram",
             "guest": "Guests",
             "participant": "Participants",
-			"official_page": "View Official Page",
-"loading_notice": "Checking official notices...",
-"no_news_title": "No new updates.",
-"no_news_desc": "There are no updates in the selected category.",
+            "notification_alert": "AGF Notifications",
+            "notification_on": "Check for new updates: ON",
+            "notification_off": "Check for new updates: OFF",
+            "notification_desc": "New notices can be checked on the News screen.",
+            "confirm": "OK",
+            "menu": "Menu",
+            "previous": "Previous",
+            "next": "Next",
+            "latest_sns": "Latest SNS Updates",
+            "sns_loading": "Loading SNS updates...",
+            "sns_empty": "No new SNS updates.",
+            "sns_error": "Failed to load SNS updates.",
+            "ticket": "Tickets",
+            "ticket_desc": "Get your AGF 2026 tickets.",
+            "sponsor": "Main Sponsors & Sponsors",
+            "sponsor_desc": "Check the main sponsors and participating sponsors of AGF 2026.",
+            "sponsor_empty": "To be updated after sponsor information is released",
+            "guest_card": "Guests",
+            "guest_desc": "Check the official AGF 2026 guest information.",
+            "guest_empty": "To be updated after guest information is released",
+            "stage_card": "Stage",
+            "stage_desc": "Check the AGF 2026 stage schedule.",
+            "stage_empty": "To be updated after stage information is released",
+            "home_back": "Home",
+            "event_schedule": "Event Schedule",
+            "venue_info": "Venue Information",
+            "event_info": "Event Information",
+            "event_guide": "Event Guide",
+            "official_channel": "Official Channels",
+            "official_homepage": "Official Website",
+            "official_x": "Official X",
+            "official_instagram": "Official Instagram",
+            "stage_guest": "Official AGF 2026 Guest",
+            "schedule_empty": "No appearance schedule information.",
+            "guest_intro": "Guest Introduction",
+            "stage_appearances": "Stage Appearances",
+            "stage_image_loading": "Stage image is being prepared",
+            "stage_title": "AGF Stage",
+            "stage_desc_main": "Select a stage and date to view the schedule.",
+            "booth_title": "AGF Booth",
+            "booth_desc": "Participants · Booths · Floor Map",
+            "booth_intro": "Participant and booth information will be available here once officially released.",
+            "participant_search": "Search participants",
+            "participant_info": "Participant Information",
+            "participant_empty": "Official participant information has not been released yet.",
+            "search_empty": "No search results.",
+            "booth_map": "Booths & Floor Map",
+            "booth_map_desc": "Check booth numbers and participants.",
+            "booth_list": "Booth List",
+            "booth_empty": "Official participant and booth information has not been released yet.",
+            "booth_update": "※ The actual floor map and participant information will be updated after official release.",
+            "booth_number": "Booth Number",
+            "official_update_pending": "Participant details will be updated after official information is released.",
+            "map_load_error": "Failed to load the floor map.",
+            "map_pending": "AGF 2026 Floor Map", 
+            "map_update_pending": "To be updated after the actual floor map is released",
+            "beta_test": "Beta Test",
+            "beta_test_done": "1.0.0 · Beta Test",
+            "close": "Close",
+        "official_page": "View Official Page",
+            "loading_notice": "Checking official notices...",
+            "no_news_title": "No new updates.",
+            "no_news_desc": "There are no updates in the selected category.",
         },
 
         "日本語": {
@@ -536,6 +613,8 @@ def main(page: ft.Page):
             "app_info": "アプリ情報",
             "version": "バージョン",
             "beta_contact": "ベータ版のお問い合わせ",
+            "unofficial_notice": "非公式ファンメイドアプリ",
+            "unofficial_notice_desc": "本アプリはAGF 2026実行委員会およびAGF Koreaの公式な提携・運営によるものではありません。",
             "beta_contact_desc": "ベータテスト中の不具合やご意見をお知らせください。",
             "agf_news": "AGF ニュース",
             "refresh": "更新",
@@ -546,10 +625,69 @@ def main(page: ft.Page):
             "instagram": "Instagram",
             "guest": "ゲスト",
             "participant": "参加者",
-			"official_page": "公式ページを確認",
-"loading_notice": "公式のお知らせを確認しています...",
-"no_news_title": "新しい情報はありません。",
-"no_news_desc": "現在選択したカテゴリーに登録された情報はありません。",	
+            "notification_alert": "AGF 通知",
+            "notification_on": "新着情報を自動確認: ON",
+            "notification_off": "新着情報を自動確認: OFF",
+            "notification_desc": "新しいお知らせはニュース画面で確認できます。",
+            "confirm": "確認",
+            "menu": "メニュー",
+            "previous": "前へ",
+            "next": "次へ",
+            "latest_sns": "SNS 最新情報",
+            "sns_loading": "SNS情報を読み込んでいます...",
+            "sns_empty": "新しいSNS情報はありません。",
+            "sns_error": "SNS情報を読み込めませんでした。",
+            "ticket": "チケット予約",
+            "ticket_desc": "AGF 2026のチケットを予約してください。",
+            "sponsor": "メインスポンサー＆スポンサー",
+            "sponsor_desc": "AGF 2026のメインスポンサーと参加スポンサーを確認してください。",
+            "sponsor_empty": "スポンサー情報公開後に更新予定",
+            "guest_card": "ゲスト",
+            "guest_desc": "AGF 2026公式ゲスト情報を確認してください。",
+            "guest_empty": "ゲスト情報公開後に更新予定",
+            "stage_card": "ステージ",
+            "stage_desc": "AGF 2026のステージスケジュールを確認してください。",
+            "stage_empty": "ステージ情報公開後に更新予定",  
+            "home_back": "ホーム",
+            "event_schedule": "イベント日程",
+            "venue_info": "会場案内",
+            "event_info": "イベント情報",
+            "event_guide": "イベント案内",
+            "official_channel": "公式チャンネル",
+            "official_homepage": "公式ウェブサイト",
+            "official_x": "公式 X",
+            "official_instagram": "公式 Instagram",
+            "stage_guest": "AGF 2026公式ゲスト",
+            "schedule_empty": "出演スケジュール情報はありません。",
+            "guest_intro": "ゲスト紹介", 
+            "stage_appearances": "出演ステージ",
+            "stage_image_loading": "ステージ画像を準備中",
+            "stage_title": "AGF ステージ",
+            "stage_desc_main": "ステージと日付を選択してスケジュールを確認してください。",
+            "booth_title": "AGF ブース",
+            "booth_desc": "参加者・ブース・会場マップ",
+            "booth_intro": "公式参加者とブース情報が公開されると、こちらで確認できます。",
+            "participant_search": "参加者を検索",
+            "participant_info": "参加者情報",
+            "participant_empty": "公式参加者情報はまだ公開されていません。",
+            "search_empty": "検索結果はありません。",
+            "booth_map": "ブース＆会場マップ",
+            "booth_map_desc": "ブース番号と参加者を確認できます。",
+            "booth_list": "ブース一覧",
+            "booth_empty": "公式参加者およびブース情報はまだ公開されていません。",
+            "booth_update": "※ 実際の会場マップと参加者情報は公式公開後に更新します。",
+            "booth_number": "ブース番号",
+            "official_update_pending": "参加者の詳細情報は公式資料公開後に更新します。",
+            "map_load_error": "会場マップを読み込めませんでした。",
+            "map_pending": "AGF 2026 会場マップ",
+            "map_update_pending": "実際の会場マップ公開後に更新予定",
+            "beta_test": "ベータテスト",
+            "beta_test_done": "1.0.0 · ベータテスト",
+            "close": "閉じる",         
+            "official_page": "公式ページを確認",
+            "loading_notice": "公式のお知らせを確認しています...",
+            "no_news_title": "新しい情報はありません。",
+            "no_news_desc": "現在選択したカテゴリーに登録された情報はありません。",   
         },
     }
 
@@ -618,30 +756,32 @@ def main(page: ft.Page):
                 e,
             )
 
-	    # 알림 버튼
+    # 알림 버튼
     def notification_clicked(e):
         status = (
-            "새소식 자동 확인: ON"
+            t("notification_on")
             if notifications_enabled
-            else "새소식 자동 확인: OFF"
+            else t("notification_off")
         )
 
         dialog = ft.AlertDialog(
-            title=ft.Text("AGF 알림"),
+            title=ft.Text(
+                t("notification_alert")
+            ),
             content=ft.Text(
-                status + "\n\n"
-                "새 공지가 올라오면 뉴스 화면에서 확인할 수 있습니다."
+                status
+                + "\n\n"
+                + t("notification_desc")
             ),
             actions=[
                 ft.TextButton(
-                    "확인",
+                    t("confirm"),
                     on_click=lambda e: page.pop_dialog(),
                 ),
             ],
         )
 
-        page.show_dialog(dialog)
-   
+        page.show_dialog(dialog)   
 
     # ==============================
     # AGF 행사 일정 데이터
@@ -759,14 +899,14 @@ def main(page: ft.Page):
                 elevation=2,
                 toolbar_height=68,
                 actions=[
-                  ft.IconButton(
-                      icon=ft.Icons.NOTIFICATIONS_OUTLINED,
-                      tooltip="알림",
-                      on_click=notification_clicked,
-                  ),
+                 ft.IconButton(
+    icon=ft.Icons.NOTIFICATIONS_OUTLINED,
+    tooltip=t("notification"),
+    on_click=notification_clicked,
+),
               ft.IconButton(
                       icon=ft.Icons.MENU,
-                      tooltip="메뉴",
+                      tooltip=t("menu"),
                       on_click=menu_clicked,
                   ),
                 ],
@@ -777,7 +917,7 @@ def main(page: ft.Page):
             page.appbar = ft.AppBar(
                 leading=ft.IconButton(
                     icon=ft.Icons.ARROW_BACK,
-                    tooltip="홈으로",
+                    tooltip=t("home_back"),
                     on_click=lambda e: change_page(index=0),
                 ),
                 title=ft.Text(
@@ -792,12 +932,12 @@ def main(page: ft.Page):
                 actions=[
                  ft.IconButton(
     icon=ft.Icons.NOTIFICATIONS_OUTLINED,
-    tooltip="알림",
+    tooltip=t("notification"),
     on_click=notification_clicked,
 ),
 ft.IconButton(
     icon=ft.Icons.MENU,
-    tooltip="메뉴",
+    tooltip=t("menu"),
     on_click=menu_clicked,
             ),
                 ],
@@ -882,12 +1022,12 @@ ft.IconButton(
                     spacing=4,
                     controls=[
                         ft.Text(
-                            "AGF 2026",
+                            t("unofficial_notice"),
                             size=24,
                             weight=ft.FontWeight.BOLD,
                         ),
                         ft.Text(
-                            "Anime × Game Festival",
+                            t("unofficial_notice_desc"),
                             size=13,
                             color="#666666",
                         ),
@@ -1000,7 +1140,7 @@ trailing=ft.Icon(
                 on_click=official_instagram_clicked,
             ),
 
-			            ft.ListTile(
+                        ft.ListTile(
                 leading=ft.Icon(
                     ft.Icons.HELP_OUTLINE,
                 ),
@@ -1015,7 +1155,7 @@ trailing=ft.Icon(
     )
 
     # 오른쪽 Drawer 연결
-			
+            
     # 오른쪽 Drawer 연결
     page.end_drawer = drawer
 
@@ -1037,24 +1177,6 @@ trailing=ft.Icon(
             print(
                 "새소식 자동 확인:",
                 "ON" if notifications_enabled else "OFF",
-            )
-
-        def language_changed(e):
-            nonlocal current_language
-
-            current_language = e.control.value
-            save_settings()
-
-            page.title = t("app_title")
-
-            navigation.destinations[0].label = t("home")
-            navigation.destinations[1].label = t("news")
-            navigation.destinations[2].label = t("stage")
-            navigation.destinations[3].label = t("booth")
-            navigation.destinations[4].label = t("settings")
-
-            change_page(
-                index=navigation.selected_index
             )
 
         return ft.Column(
@@ -1193,7 +1315,7 @@ content=ft.Text(
                                         text="日本語",
                                     ),
                                 ],
-                                
+                                on_select=language_changed,
                             ),
                         ],
                     ),
@@ -1232,15 +1354,15 @@ content=ft.Text(
                                     ft.Icons.EVENT_OUTLINED,
                                 ),
                                 title=ft.Text(
-                                    "AGF 2026",
+                                    "AGF 2026 정보",
                                     size=16,
                                 ),
                                 subtitle=ft.Text(
-                                    "Anime × Game Festival",
+                                    "비공식 팬메이드",
                                     size=13,
                                 ),
                             ),
-
+                           
                             ft.Divider(
                                 height=1,
                             ),
@@ -1254,11 +1376,27 @@ content=ft.Text(
                                     size=16,
                                 ),
                                 trailing=ft.Text(
-                                   "1.0.0 · 베타 테스트",
+                                    t("beta_test_done"),
                                     size=14,
                                     color="#777777",
                                 ),
-                            ),	
+                            ),  
+                            ft.ListTile(
+    leading=ft.Icon(
+        ft.Icons.INFO_OUTLINE,
+    ),
+    title=ft.Text(
+        t("unofficial_notice"),
+        size=16,
+    ),
+    subtitle=ft.Text(
+        t("unofficial_notice_desc"),
+        size=13,
+    ),
+),
+ft.Divider(
+    height=1,
+),
                             ft.Divider(
                                 height=1,
                             ),
@@ -1286,7 +1424,40 @@ content=ft.Text(
             ],
         )
 
-		
+    def language_changed(e):
+        nonlocal current_language
+
+        current_language = e.control.value
+        save_settings()
+
+        page.title = t("app_title")
+
+        navigation.destinations[0].label = t("home")
+        navigation.destinations[1].label = t("news")
+        navigation.destinations[2].label = t("stage")
+        navigation.destinations[3].label = t("booth")
+        navigation.destinations[4].label = t("settings")
+
+        set_appbar(current_index)
+
+        if current_index == 0:
+            content_area.content = build_home_view()
+            update_home_language()
+
+        elif current_index == 1:
+            change_page(index=1)
+
+        elif current_index == 2:
+            change_page(index=2)
+
+        elif current_index == 3:
+            change_page(index=3)
+
+        elif current_index == 4:
+            content_area.content = more_view()
+
+        page.update()
+        
     # 뉴스 카드
     def build_news_card(item):
         controls = [
@@ -1334,12 +1505,6 @@ content=ft.Text(
                 if item.get("category") == "공지"
             ]
 
-        if news_category == "행사소식":
-            return [
-                item for item in all_news_items
-                if item.get("category") == "행사소식"
-            ]
-
         if news_category == "SNS":
             return [
                 item for item in all_news_items
@@ -1369,6 +1534,48 @@ content=ft.Text(
         news_content.controls.clear()
 
         filtered_items = get_filtered_news()
+
+        def news_sort_key(item):
+            news_date = str(
+                item.get("date", "")
+            ).strip()
+
+            if not news_date:
+                return 0
+
+            # 2026-06-25 15:32:22.500
+            try:
+                return parsedate_to_datetime(
+                    news_date
+                ).timestamp()
+            except Exception:
+                pass
+
+            # ISO 형식 / 날짜 형식
+            try:
+                return date.fromisoformat(
+                    news_date[:10]
+                ).toordinal()
+            except Exception:
+                pass
+
+            # YYYY 형식
+            try:
+                return date(
+                    int(news_date[:4]),
+                    1,
+                    1,
+                ).toordinal()
+            except Exception:
+                pass
+
+            return 0
+
+        # 최신 날짜 → 오래된 날짜
+        filtered_items.sort(
+            key=news_sort_key,
+            reverse=True,
+        )
 
         if not filtered_items:
             news_content.controls.append(
@@ -1439,7 +1646,7 @@ content=ft.Text(
         spacing=8,
         controls=[
             ft.Text(
-                "SNS 소식을 불러오는 중...",
+                t("sns_loading"),
                 size=14,
                 color="#666666",
             )
@@ -1470,7 +1677,7 @@ content=ft.Text(
             if not sns_items:
                 home_sns_content.controls.append(
                     ft.Text(
-                        "새로운 SNS 소식이 없습니다.",
+                        t("sns_empty"),
                         size=14,
                         color="#666666",
                     )
@@ -1519,7 +1726,7 @@ content=ft.Text(
             home_sns_content.controls.clear()
             home_sns_content.controls.append(
                 ft.Text(
-                    "SNS 소식을 불러오지 못했습니다.",
+                    t("sns_error"),
                     size=14,
                     color="#666666",
                 )
@@ -1540,7 +1747,7 @@ content=ft.Text(
             spacing=8,
             controls=[
                 ft.Text(
-                    "📱 SNS 최신 소식",
+                    f"📱 {t('latest_sns')}",
                     size=20,
                     weight=ft.FontWeight.BOLD,
                 ),
@@ -1560,7 +1767,7 @@ content=ft.Text(
         padding=20,
         border_radius=16,
         bgcolor="#F5F5F5",
-        url="https://www.agfkorea.com/ticket",
+        url="https://m.ticket.melon.com/public/index.html#action",
         content=ft.Row(
             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
             controls=[
@@ -1575,13 +1782,13 @@ content=ft.Text(
                             spacing=3,
                             controls=[
                                 ft.Text(
-                                    "티켓 예매",
+                                    t("ticket"),
                                     size=18,
                                     weight=ft.FontWeight.BOLD,
                                 ),
-                                ft.Text(
-                                    f"{AGF_TITLE} 티켓을 예매하세요.",
-                                    size=13,
+ft.Text(
+    t("ticket_desc"),
+    size=13,
                                     color="#666666",
                                 ),
                             ],
@@ -1607,18 +1814,18 @@ content=ft.Text(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 ft.Text(
-                    "⭐ 메인 스폰서 & 스폰서",
+                    f"⭐ {t('sponsor')}",
                     size=24,
                     weight=ft.FontWeight.BOLD,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    f"{AGF_TITLE}의 메인 스폰서와 참가 스폰서를 확인하세요.",
+                    t("sponsor_desc"),
                     size=15,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    "스폰서 정보 공개 후 업데이트 예정",
+                    t("sponsor_empty"),
                     size=13,
                     text_align=ft.TextAlign.CENTER,
                 ),
@@ -1637,18 +1844,18 @@ content=ft.Text(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 ft.Text(
-                    "🎤 게스트",
+                    f"🎤 {t('guest_card')}",
                     size=24,
                     weight=ft.FontWeight.BOLD,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    f"{AGF_TITLE} 공식 게스트 정보를 확인하세요.",
+                    t("guest_desc"),
                     size=15,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    "게스트 정보 공개 후 업데이트 예정",
+                    t("guest_empty"),
                     size=13,
                     color="#666666",
                     text_align=ft.TextAlign.CENTER,
@@ -1669,18 +1876,18 @@ content=ft.Text(
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 ft.Text(
-                    "🎤 스테이지",
+                    f"🎤 {t('stage_card')}",
                     size=24,
                     weight=ft.FontWeight.BOLD,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    f"{AGF_TITLE} 스테이지 일정을 확인하세요.",
+                    t("stage_desc"),
                     size=15,
                     text_align=ft.TextAlign.CENTER,
                 ),
                 ft.Text(
-                    "스테이지 정보 공개 후 업데이트 예정",
+                    t("stage_empty"),
                     size=13,
                     color="#666666",
                     text_align=ft.TextAlign.CENTER,
@@ -1770,7 +1977,7 @@ content=ft.Text(
                 content=ft.IconButton(
                     icon=ft.Icons.CHEVRON_LEFT,
                     icon_size=30,
-                    tooltip="이전",
+                    tooltip=t("previous"),
                     on_click=previous_home_card,
                 ),
             ),
@@ -1781,27 +1988,94 @@ content=ft.Text(
                 content=ft.IconButton(
                     icon=ft.Icons.CHEVRON_RIGHT,
                     icon_size=30,
-                    tooltip="다음",
                     on_click=next_home_card,
                 ),
             ),
         ],
     )
+    # 홈 화면 부스 배치도
+    if map_file.exists():
+        home_booth_map = ft.Container(
+            margin=ft.Margin(
+                left=8,
+                right=8,
+                top=8,
+                bottom=8,
+            ),
+            padding=10,
+            border_radius=16,
+            bgcolor="#F5F5F5",
+            on_click=lambda e: change_page(index=3),
+            content=ft.Column(
+                spacing=8,
+                controls=[
+                    ft.Text(
+                        t("booth_map"),
+                        size=20,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Text(
+                        t("booth_map_desc"),
+                        size=13,
+                        color="#666666",
+                    ),
+                    ft.Container(
+                        width=float("inf"),
+                        padding=0,
+                        content=ft.Image(
+                            src=map_file.read_bytes(),
+                            width=page.width - 36 if page.width else 900,
+                            fit=ft.BoxFit.CONTAIN,
+                        ),
+                    ),
+                ],
+            ),
+        )
+    else:
+        home_booth_map = ft.Container(
+            margin=ft.Margin(
+                left=8,
+                right=8,
+                top=8,
+                bottom=8,
+            ),
+            padding=10,
+            border_radius=16,
+            bgcolor="#F5F5F5",
+            on_click=lambda e: change_page(index=3),
+            content=ft.Column(
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=8,
+                controls=[
+                    ft.Icon(
+                        ft.Icons.MAP_OUTLINED,
+                        size=50,
+                    ),
+                    ft.Text(
+                        t("map_pending"),
+                        size=18,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Text(
+                        t("map_update_pending"),
+                        size=13,
+                        color="#666666",
+                        text_align=ft.TextAlign.CENTER,
+                    ),
+                ],
+            ),
+        )
 
-    def build_home_view():
+    def build_home_view():  
+
         return ft.Column(
             expand=True,
             scroll=ft.ScrollMode.AUTO,
             spacing=0,
             controls=[
-
-                 # SNS 최신 소식
                 home_sns,
-
-                # 티켓
                 ticket_card,
 
-                # 스와이프 카드
                 ft.Container(
                     margin=ft.Margin(
                         left=0,
@@ -1815,11 +2089,11 @@ content=ft.Text(
                 ft.Container(
                     alignment=ft.Alignment.CENTER,
                     padding=6,
-                    content=home_page_indicator,
+                    content=home_page_indicator33
                 ),
-
             ],
         )
+
     news_subcategory_area = ft.Container(
         padding=ft.Padding(
             left=20,
@@ -1829,15 +2103,70 @@ content=ft.Text(
         ),
         content=None,
     )
+    def update_home_language():
+        translation_keys = [
+            "latest_sns",
+            "ticket",
+            "ticket_desc",
+            "sponsor",
+            "sponsor_desc",
+            "guest_card",
+            "guest_desc",
+            "stage_card",
+            "stage_desc",
+            "stage_image_loading",
+            "booth_map",
+            "booth_map_desc",
+        ]
+
+        # 현재 언어를 제외한 모든 언어의 기존 문구를
+        # 찾아서 현재 언어 문구로 교체
+        replacement_map = {}
+
+        for key in translation_keys:
+            for lang in ["한국어", "English", "日本語"]:
+                old_text = TRANSLATIONS[lang].get(key)
+                if old_text:
+                    replacement_map[old_text] = t(key)
+
+        # SNS 제목은 아이콘이 붙어 있으므로 별도 처리
+        for lang in ["한국어", "English", "日本語"]:
+            old_text = f"📱 {TRANSLATIONS[lang].get('latest_sns', '')}"
+            replacement_map[old_text] = f"📱 {t('latest_sns')}"
+
+        def update_control(control):
+            if control is None:
+                return
+
+            # Text
+            if isinstance(control, ft.Text):
+                current_value = control.value
+                if current_value in replacement_map:
+                    control.value = replacement_map[current_value]
+
+            # Container / Row / Column / PageView 등의 content
+            child_content = getattr(control, "content", None)
+            if child_content is not None:
+                update_control(child_content)
+
+            # controls를 가진 객체만 순회
+            child_controls = getattr(control, "controls", None)
+            if child_controls is not None:
+                for child in child_controls:
+                    update_control(child)
+
+        update_control(home_sns)
+        update_control(ticket_card)
+        update_control(home_swipe_area)
+        update_control(home_booth_map)
 
     def news_tab_changed(e):
         nonlocal news_category, news_sub_category
 
         categories = [
-            "공지",
-            "행사소식",
             "SNS",
             "공개",
+            "공지",
         ]
 
         news_category = categories[e.control.selected_index]
@@ -1867,10 +2196,14 @@ content=ft.Text(
                             scrollable=True,
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
-tabs=[
-    ft.Tab(label="X"),
-    ft.Tab(label=t("instagram")),
-],	
+                            tabs=[
+                                ft.Tab(
+                                    label="X",
+                                ),
+                                ft.Tab(
+                                    label=t("instagram"),
+                                ),
+                            ],
                         ),
                     ],
                 ),
@@ -1900,8 +2233,12 @@ tabs=[
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
                             tabs=[
-                                ft.Tab(label=t("guest")),
-                                ft.Tab(label=t("participant")),
+                                ft.Tab(
+                                    label=t("guest"),
+                                ),
+                                ft.Tab(
+                                    label=t("participant"),
+                                ),
                             ],
                         ),
                     ],
@@ -1922,12 +2259,12 @@ tabs=[
                         content=ft.Column(
                             controls=[
                                 ft.Text(
-                                    "새로운 소식이 없습니다.",
+                                    t("no_news_title"),
                                     size=18,
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 ft.Text(
-                                    "현재 선택한 카테고리에 등록된 소식이 없습니다.",
+                                    t("no_news_desc"),
                                     size=14,
                                 ),
                             ],
@@ -1944,11 +2281,12 @@ tabs=[
         
     # 화면 전환
     def change_page(e=None, index=None):
-        nonlocal news_content
+        nonlocal news_content, current_index
 
         if index is None:
             index = e.control.selected_index
-
+     
+        current_index = index
         navigation.selected_index = index
         set_appbar(index)
 
@@ -1971,7 +2309,7 @@ tabs=[
             )
 
             news_tabs = ft.Tabs(
-                length=4,
+                length=3,
                 selected_index=0,
                 on_change=news_tab_changed,
                 content=ft.Column(
@@ -1980,11 +2318,10 @@ tabs=[
                             scrollable=True,
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=3,
-                            tabs=[
-                                ft.Tab(label=t("notice")),
-                                ft.Tab(label=t("event_news")),
+                         tabs=[
                                 ft.Tab(label=t("sns")),
                                 ft.Tab(label=t("public")),
+                                ft.Tab(label=t("notice")),
                             ],
                         ),
                     ],
@@ -2072,7 +2409,7 @@ tabs=[
                     guest_name,
                     {
                         "name": guest_name,
-                        "role": "AGF 2026 공식 게스트",
+                        "role": t("stage_guest"),
                         "description": "공식 발표 후 업데이트할 예정입니다.",
                         "image": None,
                     },
@@ -2098,11 +2435,11 @@ tabs=[
                 page.appbar = ft.AppBar(
                     leading=ft.IconButton(
                         icon=ft.Icons.ARROW_BACK,
-                        tooltip="스테이지로",
+                        tooltip=t("stage"),
                         on_click=lambda e: change_page(index=2),
                     ),
                     title=ft.Text(
-                        "게스트 정보",
+                       t("guest_card"),
                         size=21,
                         weight=ft.FontWeight.BOLD,
                     ),
@@ -2176,7 +2513,7 @@ tabs=[
                 else:
                     schedule_controls.append(
                         ft.Text(
-                            "출연 일정 정보가 없습니다.",
+                            t("schedule_empty"),
                             size=14,
                             color="#666666",
                         )
@@ -2237,7 +2574,7 @@ tabs=[
                                 spacing=8,
                                 controls=[
                                     ft.Text(
-                                        "게스트 소개",
+                                        t("guest_intro"),
                                         size=18,
                                         weight=ft.FontWeight.BOLD,
                                     ),
@@ -2263,7 +2600,7 @@ tabs=[
                                 spacing=10,
                                 controls=[
                                     ft.Text(
-                                        "출연 스테이지",
+                                        t("stage_appearances"),
                                         size=18,
                                         weight=ft.FontWeight.BOLD,
                                     ),
@@ -2310,7 +2647,7 @@ tabs=[
                     ),
                     actions=[
                         ft.TextButton(
-                            "닫기",
+                            t("close"),
                             on_click=lambda e: setattr(dialog, "open", False) or page.update(),
                         ),
                     ],
@@ -2368,7 +2705,7 @@ tabs=[
                                 size=50,
                             ),
                             ft.Text(
-                                "스테이지 이미지 준비 중",
+                                t("stage_image_loading"),
                                 size=16,
                                 weight=ft.FontWeight.BOLD,
                             ),
@@ -2458,13 +2795,12 @@ tabs=[
                             spacing=5,
                             controls=[
                                 ft.Text(
-                                    "AGF 스테이지",
+                                    t("stage_title"),
                                     size=26,
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 ft.Text(
-                                    "스테이지와 날짜를 선택해 "
-                                    "일정을 확인하세요.",
+                                    t("stage_desc_main"),
                                     size=14,
                                     color="#666666",
                                 ),
@@ -2543,7 +2879,7 @@ tabs=[
                 page.show_dialog(dialog)
 
             search_field = ft.TextField(
-                hint_text="참가사 검색",
+                hint_text=t("participant_search"),
                 prefix_icon=ft.Icons.SEARCH,
                 border_radius=10,
             )
@@ -2666,7 +3002,7 @@ tabs=[
             if not participants:
                 booth_list.controls.append(
                     ft.Text(
-                        "공식 참가사 및 부스 정보가 아직 공개되지 않았습니다.",
+                        t("booth_empty"),
                         size=14,
                         color="#666666",
                     )
@@ -2770,7 +3106,7 @@ tabs=[
                     ft.Container(
                         padding=20,
                         content=ft.Text(
-                            "AGF 부스",
+                            t("booth_title"),
                             size=26,
                             weight=ft.FontWeight.BOLD,
                         ),
@@ -2790,7 +3126,7 @@ tabs=[
                             spacing=8,
                             controls=[
                                 ft.Text(
-                                    "참가사 · 부스 · 배치도",
+                                    t("booth_desc"),
                                     size=20,
                                     weight=ft.FontWeight.BOLD,
                                 ),
@@ -2823,14 +3159,13 @@ tabs=[
                                         indicator_thickness=3,
                                         tabs=[
                                             ft.Tab(
-                                                label="참가사",
+                                                label=t("participant"),
                                             ),
                                             ft.Tab(
-                                                label="부스 & 배치도",
+                                                label=t("booth_map"),
                                             ),
                                         ],
                                     ),
-
                                     ft.Container(
                                         height=500,
                                         content=ft.TabBarView(
@@ -2842,7 +3177,7 @@ tabs=[
                                                         spacing=10,
                                                         controls=[
                                                             ft.Text(
-                                                                "참가사 정보",
+                                                                t("participant_info"),
                                                                 size=20,
                                                                 weight=ft.FontWeight.BOLD,
                                                             ),
@@ -2862,20 +3197,20 @@ tabs=[
                                                         scroll=ft.ScrollMode.AUTO,
                                                         controls=[
                                                             ft.Text(
-                                                                "부스 & 배치도",
+                                                                t("booth_map"),
                                                                 size=20,
                                                                 weight=ft.FontWeight.BOLD,
                                                             ),
 
                                                             ft.Text(
-                                                                "부스 번호와 참가사를 확인할 수 있습니다.",
+                                                                t("booth_map_desc"),
                                                                 size=13,
                                                             ),
 
                                                             map_view,
 
                                                             ft.Text(
-                                                                "부스 목록",
+                                                                t("booth_list"),
                                                                 size=18,
                                                                 weight=ft.FontWeight.BOLD,
                                                             ),
@@ -2883,7 +3218,7 @@ tabs=[
                                                             booth_list,
 
                                                             ft.Text(
-                                                                "※ 실제 배치도와 참가사 정보 공개 후 업데이트됩니다.",
+                                                                t("booth_update"),
                                                                 size=12,
                                                                 color="#666666",
                                                            ),
@@ -2989,7 +3324,7 @@ tabs=[
     page.run_task(auto_refresh_news)
 
     page.add(content_area)
-	
+    
     # 베타 테스트 안내 팝업
     def show_beta_dialog():
         dialog = ft.AlertDialog(
@@ -2998,7 +3333,9 @@ tabs=[
                 weight=ft.FontWeight.BOLD,
             ),
             content=ft.Text(
-                "현재 이 앱은 베타 테스트 버전입니다.\n\n"
+                "본 웹사이트는 AGF 공식 웹사이트가 아닌 "
+                "비공식 팬메이드 웹사이트입니다.\n\n"
+                "현재 이 웹사이트는 베타 테스트 버전입니다.\n\n"
                 "일부 기능이나 정보가 변경되거나 "
                 "오류가 발생할 수 있습니다.\n\n"
                 "불편사항이나 오류는 "
@@ -3016,7 +3353,7 @@ tabs=[
         page.show_dialog(dialog)
 
     show_beta_dialog()
-		
+        
     refresh_home_sns()
 
 app = ft.run(main, export_asgi_app=True)
