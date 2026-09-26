@@ -112,7 +112,7 @@ def fetch_agf_news():
                     ),
                     "category": "공지",
                     "sub_category": "공지",
-                    "source": "AGF 공식",
+                    "source": "출처: AGF Korea",
                 }
             )
 
@@ -197,7 +197,7 @@ def fetch_sns_news():
                         "category": "SNS",
                         "sub_category": sub_category,
                         "date": pub_date,
-                        "source": f"AGF 공식 {sub_category}",
+                        "source": f"출처: AGF Korea {sub_category}",
                     }
                 )
 
@@ -271,7 +271,7 @@ def fetch_public_news():
                 "url": item["url"],
                 "category": "공개",
                 "sub_category": item["sub_category"],
-                "source": "AGF 공식",
+                "source": "출처: AGF Korea",
                 "description": (
                     "공식 안내가 공개되었습니다. 자세한 내용은 공식 페이지에서 확인하세요."
                     if available
@@ -464,9 +464,9 @@ def main(page: ft.Page):
             "event_name": "Anime × Game Festival",
             "open_original": "원문 열기",
             "fanmade_short": "비공식 팬메이드",
-            "source_official": "AGF 공식",
-            "source_x": "AGF 공식 X",
-            "source_instagram": "AGF 공식 Instagram",
+            "source_official": "출처: AGF Korea",
+            "source_x": "출처: AGF Korea X",
+            "source_instagram": "출처: AGF Korea Instagram",
             "public_guest_title": "AGF 2026 게스트 · 성우",
             "public_participant_title": "AGF 2026 참가사",
             "public_pending_desc": "공식 안내가 아직 공개되지 않았습니다.",
@@ -590,9 +590,9 @@ def main(page: ft.Page):
             "event_name": "Anime × Game Festival",
             "open_original": "Open Original",
             "fanmade_short": "Unofficial Fan-Made",
-            "source_official": "AGF Official",
-            "source_x": "AGF Official X",
-            "source_instagram": "AGF Official Instagram",
+            "source_official": "Source: AGF Korea",
+            "source_x": "Source: AGF Korea X",
+            "source_instagram": "Source: AGF Korea Instagram",
             "public_guest_title": "AGF 2026 Guests · Voice Actors",
             "public_participant_title": "AGF 2026 Participants",
             "public_pending_desc": "Official information has not been released yet.",
@@ -716,9 +716,9 @@ def main(page: ft.Page):
             "event_name": "Anime × Game Festival",
             "open_original": "原文を開く",
             "fanmade_short": "非公式ファンメイド",
-            "source_official": "AGF 公式",
-            "source_x": "AGF 公式 X",
-            "source_instagram": "AGF 公式 Instagram",
+            "source_official": "出典: AGF Korea",
+            "source_x": "出典: AGF Korea X",
+            "source_instagram": "出典: AGF Korea Instagram",
             "public_guest_title": "AGF 2026 ゲスト・声優",
             "public_participant_title": "AGF 2026 参加者",
             "public_pending_desc": "公式情報はまだ公開されていません。",
