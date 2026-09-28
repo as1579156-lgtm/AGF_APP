@@ -1,0 +1,93 @@
+  AGF_APP
+Third-Party Notices
+
+Copyright and licensing information for third-party software used by this project.
+
+---
+
+## 1. Flet
+
+Project: Flet
+Version used by this project: 1.0.0
+License: Apache License 2.0
+
+Flet is used as the application framework for this project.
+
+The Flet project is distributed under the Apache License 2.0.
+
+The license and copyright notices applicable to Flet remain with the Flet project and its respective copyright holders.
+
+---
+
+## 2. Uvicorn
+
+Project: Uvicorn
+License: BSD 3-Clause License
+
+Uvicorn is used as the ASGI server for the web deployment of this project.
+
+Uvicorn is distributed under the BSD 3-Clause License.
+
+The license and copyright notices applicable to Uvicorn remain with the Uvicorn project and its respective copyright holders.
+
+---
+
+## 3. Winotify
+
+Project: Winotify
+License: MIT License
+
+Winotify is referenced by the source code for optional Windows desktop notification functionality.
+
+The source code checks the operating system before importing Winotify, and the Windows-specific notification functionality is not required for the Linux-based web deployment.
+
+The license and copyright notices applicable to Winotify remain with the Winotify project and its respective copyright holders.
+
+---
+
+## 4. Python Standard Library
+
+This project uses modules from the Python Standard Library, including but not limited to:
+
+* json
+* pathlib
+* urllib
+* html.parser
+* asyncio
+* datetime
+* email.utils
+* os
+* re
+* xml.etree.ElementTree
+
+Python and its bundled components are subject to their applicable Python Software Foundation License terms and, where applicable, the licenses of individual bundled components.
+
+---
+
+## 5. AGF and Third-Party Content
+
+This NOTICE does **not** grant any license to AGF-related or other third-party content.
+
+In particular, this NOTICE does not grant permission to use, reproduce, modify, redistribute, or commercially exploit:
+
+* AGF trademarks or names
+* AGF 2026 branding
+* AGF official logos
+* Official photographs or images
+* Guest photographs
+* Stage images
+* Booth or floor maps
+* Participant or company logos
+* Official website content
+* Official social-media content
+* Any other third-party copyrighted material
+
+Such materials remain subject to the rights, licenses, permissions, and terms of their respective rights holders.
+
+---
+
+## 6. Unofficial Project Status
+
+AGF_APP is an unofficial fan-made information project.
+
+This project is not officially affiliated with, endorsed by, sponsored by, or operated by the AGF 2026 Organizing Committee or AGF Korea.
