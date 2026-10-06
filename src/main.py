@@ -134,9 +134,6 @@ def fetch_agf_news():
 def fetch_sns_news():
     news_items = []
 
-    # 기존에 정상적으로 검색되던 조건을 유지합니다.
-    # Instagram은 Google News RSS에서 댓글/답글을 직접 구분하기 어렵기 때문에
-    # 과도한 URL/title 필터를 적용하지 않아 정상 게시물이 사라지는 것을 방지합니다.
     rss_queries = [
         (
             "X",
@@ -183,12 +180,6 @@ def fetch_sns_news():
                 if not title or not link:
                     continue
 
-                # X는 다른 계정에 대한 답글로 보이는 항목을 1차로 제외합니다.
-                # Google News RSS의 검색어를 과도하게 제한하면 정상 게시물까지 사라질 수 있으므로
-                # 기존 검색 조건은 유지하고, 제목이 멘션으로 시작하는 경우만 제외합니다.
-                if sub_category == "X" and title.lstrip().startswith("@"):
-                    continue
-
                 # X는 날짜가 확인되면 2026년 자료만 표시
                 # 날짜가 없는 자료는 일단 표시
                 if sub_category == "X" and pub_date:
@@ -229,6 +220,7 @@ def fetch_sns_news():
     )
 
     return news_items
+
 
 def fetch_public_news():
     page_data = [
@@ -1184,11 +1176,165 @@ def main(page: ft.Page):
             f"{t('schedule_date_3')}",
         )
 
-    async def venue_clicked(e):
-        await show_drawer_dialog(
-            t("venue_info"),
-            t("venue_pending"),
+    def build_venue_map():
+        # 공식 배치도 이미지를 그대로 사용하지 않고,
+        # 웹사이트에서 직접 그린 간단한 행사장 위치 안내도입니다.
+        return ft.Container(
+            width=390,
+            height=260,
+            border_radius=16,
+            bgcolor="#EEF2F6",
+            clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
+            content=ft.Stack(
+                controls=[
+                    # 주변 도로
+                    ft.Container(
+                        left=0,
+                        top=92,
+                        width=390,
+                        height=48,
+                        bgcolor="#D8DDE3",
+                    ),
+                    ft.Container(
+                        left=266,
+                        top=0,
+                        width=48,
+                        height=260,
+                        bgcolor="#D8DDE3",
+                    ),
+                    # 녹지
+                    ft.Container(
+                        left=18,
+                        top=18,
+                        width=110,
+                        height=58,
+                        border_radius=18,
+                        bgcolor="#DCEAD8",
+                    ),
+                    ft.Container(
+                        left=22,
+                        top=178,
+                        width=120,
+                        height=58,
+                        border_radius=18,
+                        bgcolor="#DCEAD8",
+                    ),
+                    # KINTEX 제1전시장
+                    ft.Container(
+                        left=82,
+                        top=62,
+                        width=190,
+                        height=138,
+                        border_radius=12,
+                        bgcolor="#FFFFFF",
+                        border=ft.Border(
+                            top=ft.BorderSide(2, "#B8C0C9"),
+                            right=ft.BorderSide(2, "#B8C0C9"),
+                            bottom=ft.BorderSide(2, "#B8C0C9"),
+                            left=ft.BorderSide(2, "#B8C0C9"),
+                        ),
+                        content=ft.Column(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                            spacing=6,
+                            controls=[
+                                ft.Text(
+                                    "KINTEX 제1전시장",
+                                    size=17,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                                ft.Text(
+                                    "1홀 · 2홀 · 3홀 · 4홀 · 5홀",
+                                    size=12,
+                                    color="#666666",
+                                ),
+                            ],
+                        ),
+                    ),
+                    # 위치 핀
+                    ft.Container(
+                        left=208,
+                        top=86,
+                        width=54,
+                        height=54,
+                        alignment=ft.Alignment.CENTER,
+                        content=ft.Icon(
+                            ft.Icons.LOCATION_ON,
+                            size=46,
+                            color="#D32F2F",
+                        ),
+                    ),
+                    # 지도 라벨
+                    ft.Container(
+                        left=332,
+                        top=152,
+                        content=ft.Text(
+                            "킨텍스로",
+                            size=12,
+                            weight=ft.FontWeight.BOLD,
+                            color="#555555",
+                        ),
+                    ),
+                    ft.Container(
+                        left=18,
+                        top=222,
+                        content=ft.Text(
+                            "대화역 방향",
+                            size=11,
+                            color="#666666",
+                        ),
+                    ),
+                ],
+            ),
         )
+
+    async def venue_clicked(e):
+        await page.close_end_drawer()
+
+        naver_map_url = "https://map.naver.com/p/search/KINTEX"
+
+        dialog = ft.AlertDialog(
+            title=ft.Text(
+                t("venue_info"),
+                weight=ft.FontWeight.BOLD,
+            ),
+            content=ft.Column(
+                tight=True,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                spacing=14,
+                controls=[
+                    build_venue_map(),
+                    ft.Column(
+                        spacing=4,
+                        controls=[
+                            ft.Text(
+                                "KINTEX 제1전시장",
+                                size=17,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                            ft.Text(
+                                "경기도 고양시 일산서구 킨텍스로 217-60",
+                                size=13,
+                                color="#666666",
+                            ),
+                        ],
+                    ),
+                    ft.FilledButton(
+                        "네이버 지도에서 보기",
+                        icon=ft.Icons.MAP_OUTLINED,
+                        on_click=lambda e: webbrowser.open(naver_map_url),
+                    ),
+                ],
+            ),
+            actions=[
+                ft.TextButton(
+                    t("confirm"),
+                    on_click=lambda e: page.pop_dialog(),
+                ),
+            ],
+        )
+
+        page.show_dialog(dialog)
 
     async def event_info_clicked(e):
         await show_drawer_dialog(
