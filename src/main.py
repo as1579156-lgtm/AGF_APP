@@ -134,6 +134,9 @@ def fetch_agf_news():
 def fetch_sns_news():
     news_items = []
 
+    # 기존에 정상적으로 검색되던 조건을 유지합니다.
+    # Instagram은 Google News RSS에서 댓글/답글을 직접 구분하기 어렵기 때문에
+    # 과도한 URL/title 필터를 적용하지 않아 정상 게시물이 사라지는 것을 방지합니다.
     rss_queries = [
         (
             "X",
@@ -180,6 +183,12 @@ def fetch_sns_news():
                 if not title or not link:
                     continue
 
+                # X는 다른 계정에 대한 답글로 보이는 항목을 1차로 제외합니다.
+                # Google News RSS의 검색어를 과도하게 제한하면 정상 게시물까지 사라질 수 있으므로
+                # 기존 검색 조건은 유지하고, 제목이 멘션으로 시작하는 경우만 제외합니다.
+                if sub_category == "X" and title.lstrip().startswith("@"):
+                    continue
+
                 # X는 날짜가 확인되면 2026년 자료만 표시
                 # 날짜가 없는 자료는 일단 표시
                 if sub_category == "X" and pub_date:
@@ -220,7 +229,6 @@ def fetch_sns_news():
     )
 
     return news_items
-
 
 def fetch_public_news():
     page_data = [
