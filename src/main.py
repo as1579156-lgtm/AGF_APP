@@ -1322,7 +1322,7 @@ def main(page: ft.Page):
                     ft.FilledButton(
                         "네이버 지도에서 보기",
                         icon=ft.Icons.MAP_OUTLINED,
-                        on_click=lambda e: webbrowser.open(naver_map_url),
+                        url=naver_map_url,
                     ),
                 ],
             ),
@@ -3509,7 +3509,7 @@ def main(page: ft.Page):
                 t("beta_dialog_message"),
                 size=15,
             ),
-            actions=[
+            actions=[	
                 ft.TextButton(
                     t("close"),
                     on_click=lambda e: page.pop_dialog(),
