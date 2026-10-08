@@ -6,8 +6,6 @@ from urllib.parse import (
     urljoin,
     quote,
 )
-from html.parser import HTMLParser
-import asyncio
 from datetime import date
 from email.utils import parsedate_to_datetime
 import os
@@ -37,99 +35,6 @@ map_file = (
     / "assets"
     / f"agf_{CURRENT_YEAR}_booth_map.png"
 )
-
-
-class NewsParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.news = []
-        self.current_link = None
-        self.current_text = []
-
-    def handle_starttag(self, tag, attrs):
-        if tag == "a":
-            attrs = dict(attrs)
-            href = attrs.get("href", "")
-
-            if "/post/1/" in href:
-                self.current_link = href
-                self.current_text = []
-
-    def handle_data(self, data):
-        if self.current_link is not None:
-            text = data.strip()
-            if text:
-                self.current_text.append(text)
-
-    def handle_endtag(self, tag):
-        if tag == "a" and self.current_link is not None:
-            title = " ".join(self.current_text).strip()
-
-            if title:
-                self.news.append(
-                    {
-                        "title": title,
-                        "url": self.current_link,
-                    }
-                )
-
-            self.current_link = None
-            self.current_text = []
-
-
-def fetch_agf_news():
-    url = "https://www.agfkorea.com/customer?idx=1"
-
-    try:
-        request = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": "Mozilla/5.0",
-            },
-        )
-
-        with urllib.request.urlopen(
-            request,
-            timeout=10,
-        ) as response:
-            html = response.read().decode(
-                "utf-8",
-                errors="ignore",
-            )
-
-        parser = NewsParser()
-        parser.feed(html)
-
-        news_items = []
-
-        for item in parser.news:
-            news_items.append(
-                {
-                    "title": item["title"],
-                    "url": urljoin(
-                        "https://www.agfkorea.com",
-                        item["url"],
-                    ),
-                    "category": "공지",
-                    "sub_category": "공지",
-                    "source": "출처: AGF Korea",
-                }
-            )
-
-        print(
-            f"[공식 뉴스] 가져온 항목 수: "
-            f"{len(news_items)}"
-        )
-
-        return news_items
-
-    except Exception as e:
-        print(
-            "AGF 공식 뉴스 불러오기 실패:",
-            repr(e),
-        )
-        return []
-
 
 def fetch_sns_news():
     news_items = []
@@ -180,13 +85,21 @@ def fetch_sns_news():
                 if not title or not link:
                     continue
 
+                # X 답글/댓글성 게시물 제외
+                if sub_category == "X":
+                    lower_title = title.lower()
+
                 # X는 날짜가 확인되면 2026년 자료만 표시
                 # 날짜가 없는 자료는 일단 표시
                 if sub_category == "X" and pub_date:
                     try:
-                        parsed_date = parsedate_to_datetime(pub_date)
+                        parsed_date = parsedate_to_datetime(
+                            pub_date
+                        )
+
                         if parsed_date.year != CURRENT_YEAR:
                             continue
+
                     except Exception:
                         pass
 
@@ -287,11 +200,6 @@ def fetch_all_news():
     all_items = []
 
     try:
-        all_items.extend(fetch_agf_news())
-    except Exception as e:
-        print("공식 뉴스 처리 실패:", e)
-
-    try:
         all_items.extend(fetch_sns_news())
     except Exception as e:
         print("SNS 뉴스 처리 실패:", e)
@@ -345,8 +253,11 @@ def main(page: ft.Page):
     saved = False
     news_content = None
     seen_news = []
+    seen_notices = []
     notifications_enabled = True
     news_initialized = False
+
+    admin_authenticated = False
 
     news_category = "SNS"
     news_sub_category = "X"
@@ -355,6 +266,12 @@ def main(page: ft.Page):
     current_index = 0
 
     save_file = Path(__file__).with_name("agf_settings.json")
+    cache_file = Path(__file__).with_name("news_cache.json")
+
+    print("================================")
+    print("[뉴스 캐시 경로]", cache_file.resolve())
+    print("[뉴스 캐시 존재]", cache_file.exists())
+    print("================================")
 
     # 기존 저장값 불러오기
     if save_file.exists():
@@ -365,6 +282,7 @@ def main(page: ft.Page):
 
             saved = settings.get("saved", False)
             seen_news = settings.get("seen_news", [])
+            seen_notices = settings.get("seen_notices", [])
             notifications_enabled = settings.get(
                 "notifications_enabled",
                 True,
@@ -388,6 +306,7 @@ def main(page: ft.Page):
         except (json.JSONDecodeError, OSError):
             saved = False
             seen_news = []
+            seen_notices = []
             notifications_enabled = True
             news_initialized = False
             current_language = "한국어"
@@ -412,7 +331,7 @@ def main(page: ft.Page):
             "version": "버전",
             "beta_contact": "테스트버전 문의",
             "beta_contact_desc": "베타 테스트 중 오류나 의견을 알려주세요.",
-            "unofficial_notice": "비공식 팬메이드 앱",
+            "unofficial_notice": "비공식 팬메이드 웹사이트",
             "unofficial_notice_desc": "본 앱은 AGF 2026 조직위원회 및 AGF Korea와 공식적인 제휴·운영 관계가 없습니다.",
             "agf_news": "AGF 뉴스",
             "refresh": "새로고침",
@@ -437,7 +356,10 @@ def main(page: ft.Page):
             "sns_empty": "새로운 SNS 소식이 없습니다.",
             "sns_error": "SNS 소식을 불러오지 못했습니다.",
             "ticket": "티켓 예매",
-            "ticket_desc": "AGF 2026 티켓을 예매하세요.",
+            "ticket_desc": "AGF 2026 티켓 예매 일정",
+            "ticket_earlybird": "얼리버드: 10월 14일(수) ~ 11월 11일(수)",
+            "ticket_fast": "패스트 티켓: 10월 14일(수) 10:00 ~ 소진 시",
+            "ticket_general": "일반 티켓: 11월 12일(목) ~",
             "sponsor": "메인 스폰서 & 스폰서",
             "sponsor_desc": "AGF 2026의 메인 스폰서와 참가 스폰서를 확인하세요.",
             "sponsor_empty": "스폰서 정보 공개 후 업데이트 예정",
@@ -521,6 +443,19 @@ def main(page: ft.Page):
             "loading_notice": "공식 공지를 확인하는 중...",
             "no_news_title": "새로운 소식이 없습니다.",
             "no_news_desc": "현재 선택한 카테고리에 등록된 소식이 없습니다.",
+            "site_notice_title": "웹사이트 업데이트 안내",
+            "site_notice_message": "최근 업데이트\n\n• 스테이지 날짜 및 RED / BLUE 탭 UI를 개선했습니다.\n• 티켓 예매 일정 정보를 추가했습니다.\n• 부스 화면 UI를 정리했습니다.\n\n앞으로도 AGF 2026 관련 정보와 기능을 순차적으로 업데이트할 예정입니다.",
+            "admin": "관리자",
+            "admin_edit": "관리자 수정",
+            "admin_password": "관리자 비밀번호",
+            "admin_unlock": "수정 모드 열기",
+            "admin_locked": "수정 모드 잠김",
+            "admin_wrong_password": "비밀번호가 올바르지 않습니다.",
+            "admin_password_missing": "관리자 비밀번호가 설정되지 않았습니다. AGF_ADMIN_PASSWORD 환경 변수를 설정하세요.",
+            "stage_edit": "스테이지 내용 수정",
+            "stage_type_edit": "스테이지 구분",
+            "guest_edit": "게스트 수정",
+            "save": "저장",
         },
         "English": {
             "app_title": "AGF 2026 Info",
@@ -538,7 +473,7 @@ def main(page: ft.Page):
             "version": "Version",
             "beta_contact": "Beta Test Feedback",
             "beta_contact_desc": "Report bugs or share feedback during beta testing.",
-            "unofficial_notice": "Unofficial Fan-Made App",
+            "unofficial_notice": "Unofficial Fan-Made Website",
             "unofficial_notice_desc": "This app is not officially affiliated with or operated by the AGF 2026 Organizing Committee or AGF Korea.",
             "agf_news": "AGF News",
             "refresh": "Refresh",
@@ -563,7 +498,10 @@ def main(page: ft.Page):
             "sns_empty": "No new SNS updates.",
             "sns_error": "Failed to load SNS updates.",
             "ticket": "Tickets",
-            "ticket_desc": "Get your AGF 2026 tickets.",
+            "ticket_desc": "AGF 2026 Ticket Schedule",
+            "ticket_earlybird": "Early Bird: Oct 14 (Wed) ~ Nov 11 (Wed)",
+            "ticket_fast": "Fast Ticket: Oct 14 (Wed) 10:00 ~ while supplies last",
+            "ticket_general": "General Tickets: Nov 12 (Thu) ~",
             "sponsor": "Main Sponsors & Sponsors",
             "sponsor_desc": "Check the main sponsors and participating sponsors of AGF 2026.",
             "sponsor_empty": "To be updated after sponsor information is released",
@@ -647,6 +585,19 @@ def main(page: ft.Page):
             "loading_notice": "Checking official notices...",
             "no_news_title": "No new updates.",
             "no_news_desc": "There are no updates in the selected category.",
+            "site_notice_title": "Website Update",
+            "site_notice_message": "Recent updates\n\n• Improved the Stage date and RED / BLUE tab UI.\n• Added the AGF 2026 ticket sales schedule.\n• Refined the Booth screen UI.\n\nMore AGF 2026 information and features will be updated progressively.",
+            "admin": "Admin",
+            "admin_edit": "Admin Edit",
+            "admin_password": "Admin Password",
+            "admin_unlock": "Unlock Edit Mode",
+            "admin_locked": "Edit Mode Locked",
+            "admin_wrong_password": "The password is incorrect.",
+            "admin_password_missing": "No admin password is configured. Set the AGF_ADMIN_PASSWORD environment variable.",
+            "stage_edit": "Edit Stage Content",
+            "stage_type_edit": "Stage",
+            "guest_edit": "Edit Guest",
+            "save": "Save",
         },
         "日本語": {
             "app_title": "AGF 2026 情報",
@@ -664,7 +615,7 @@ def main(page: ft.Page):
             "version": "バージョン",
             "beta_contact": "ベータ版のお問い合わせ",
             "beta_contact_desc": "ベータテスト中の不具合やご意見をお知らせください。",
-            "unofficial_notice": "非公式ファンメイドアプリ",
+            "unofficial_notice": "非公式ファンメイドウェブサイト",
             "unofficial_notice_desc": "本アプリはAGF 2026実行委員会およびAGF Koreaの公式な提携・運営によるものではありません。",
             "agf_news": "AGF ニュース",
             "refresh": "更新",
@@ -689,7 +640,10 @@ def main(page: ft.Page):
             "sns_empty": "新しいSNS情報はありません。",
             "sns_error": "SNS情報を読み込めませんでした。",
             "ticket": "チケット予約",
-            "ticket_desc": "AGF 2026のチケットを予約してください。",
+            "ticket_desc": "AGF 2026 チケット販売日程",
+            "ticket_earlybird": "早期割引: 10月14日(水) ～ 11月11日(水)",
+            "ticket_fast": "ファストチケット: 10月14日(水) 10:00 ～ 売り切れまで",
+            "ticket_general": "一般チケット: 11月12日(木) ～",
             "sponsor": "メインスポンサー＆スポンサー",
             "sponsor_desc": "AGF 2026のメインスポンサーと参加スポンサーを確認してください。",
             "sponsor_empty": "スポンサー情報公開後に更新予定",
@@ -773,6 +727,19 @@ def main(page: ft.Page):
             "loading_notice": "公式のお知らせを確認しています...",
             "no_news_title": "新しい情報はありません。",
             "no_news_desc": "現在選択したカテゴリーに登録された情報はありません。",
+            "site_notice_title": "ウェブサイト更新のお知らせ",
+            "site_notice_message": "最近の更新\n\n• ステージの日付およびRED / BLUEタブUIを改善しました。\n• AGF 2026のチケット販売日程を追加しました。\n• ブース画面のUIを整理しました。\n\n今後もAGF 2026の情報や機能を順次更新します。",
+            "admin": "管理者",
+            "admin_edit": "管理者編集",
+            "admin_password": "管理者パスワード",
+            "admin_unlock": "編集モードを開く",
+            "admin_locked": "編集モードはロック中",
+            "admin_wrong_password": "パスワードが正しくありません。",
+            "admin_password_missing": "管理者パスワードが設定されていません。AGF_ADMIN_PASSWORD環境変数を設定してください。",
+            "stage_edit": "ステージ内容を編集",
+            "stage_type_edit": "ステージ区分",
+            "guest_edit": "ゲストを編集",
+            "save": "保存",
         },
     }
 
@@ -797,6 +764,7 @@ def main(page: ft.Page):
         settings = {
             "saved": saved,
             "seen_news": seen_news,
+            "seen_notices": seen_notices,
             "notifications_enabled": notifications_enabled,
             "news_initialized": news_initialized,
             "language": current_language,
@@ -1764,9 +1732,6 @@ def main(page: ft.Page):
         category = item.get("category")
         sub_category = item.get("sub_category")
 
-        if category == "공지":
-            return t("source_official")
-
         if category == "SNS":
             if sub_category == "Instagram":
                 return t("source_instagram")
@@ -1776,6 +1741,25 @@ def main(page: ft.Page):
             return t("source_official")
 
         return item.get("source", "")
+
+    def format_news_date(value):
+        """뉴스 날짜 표시 형식을 YYYY.MM.DD로 통일합니다."""
+        news_date = str(value or "").strip()
+        if not news_date:
+            return ""
+        try:
+            return parsedate_to_datetime(news_date).strftime("%Y.%m.%d")
+        except Exception:
+            pass
+        try:
+            return date.fromisoformat(news_date[:10]).strftime("%Y.%m.%d")
+        except Exception:
+            pass
+        match = re.match(r"^(\d{4})[./-](\d{1,2})[./-](\d{1,2})", news_date)
+        if match:
+            year, month, day = match.groups()
+            return f"{year}.{int(month):02d}.{int(day):02d}"
+        return news_date[:10].replace("-", ".")
 
     def build_news_card(item):
         controls = [
@@ -1788,7 +1772,7 @@ def main(page: ft.Page):
                 spacing=10,
                 controls=[
                     ft.Text(
-                        str(item.get("date", ""))[:10].replace("-", "."),
+                        format_news_date(item.get("date", "")),
                         size=14,
                         color="#777777",
                     ),
@@ -1837,16 +1821,6 @@ def main(page: ft.Page):
         )
 
     def get_filtered_news():
-        if news_category == "전체":
-            return all_news_items
-
-        if news_category == "공지":
-            return [
-                item
-                for item in all_news_items
-                if item.get("category") == "공지"
-            ]
-
         if news_category == "SNS":
             return [
                 item
@@ -1869,9 +1843,86 @@ def main(page: ft.Page):
         if news_content is None:
             return
 
-        new_items = fetch_all_news() or []
+        new_items = []
+
+        # 자동 수집기가 저장한 캐시 사용
+        if cache_file.exists():
+            try:
+                cache_data = json.loads(
+                    cache_file.read_text(
+                        encoding="utf-8"
+                    )
+                )
+
+                cached_items = cache_data.get(
+                    "items",
+                    [],
+                )
+
+                if isinstance(cached_items, list):
+                    filtered_cached_items = []
+
+                    for item in cached_items:
+                        category = item.get("category")
+                        sub_category = item.get("sub_category")
+                        title = str(
+                            item.get("title", "")
+                        ).strip()
+                        news_date = str(
+                            item.get("date", "")
+                        ).strip()
+
+                        # SNS 필터
+                        if category == "SNS":
+
+                            # X: 다른 사람에게 답글한 게시물 제외
+                            if sub_category == "X":
+                                if title.lstrip().startswith("@"):
+                                    continue
+
+                            # X / Instagram: 현재 연도 자료만 표시
+                            if sub_category in ["X", "Instagram"] and news_date:
+                                try:
+                                    parsed = parsedate_to_datetime(
+                                        news_date
+                                    )
+
+                                    if parsed.year != CURRENT_YEAR:
+                                        continue
+
+                                except Exception:
+                                    pass
+
+                        filtered_cached_items.append(item)
+                    new_items = filtered_cached_items
+
+                    print(
+                        "[뉴스 캐시] 원본:",
+                        len(cached_items),
+                        "→ 필터 후:",
+                        len(new_items),
+                    )
+
+                    for item in new_items:
+                        print(
+                            "[뉴스 캐시]",
+                            item.get("category"),
+                            item.get("sub_category"),
+                            item.get("date"),
+                            item.get("title"),
+                        )
+
+            except (
+                json.JSONDecodeError,
+                OSError,
+            ) as e:
+                print(
+                    "[뉴스 캐시] 불러오기 실패:",
+                    repr(e),
+                )
 
         all_news_items.clear()
+
         all_news_items.extend(new_items)
 
         news_content.controls.clear()
@@ -1993,7 +2044,37 @@ def main(page: ft.Page):
 
     def refresh_home_sns():
         try:
-            sns_items = fetch_sns_news() or []
+            sns_items = []
+
+            # 자동 수집기가 저장한 캐시에서 SNS만 가져오기
+            if cache_file.exists():
+                try:
+                    cache_data = json.loads(
+                        cache_file.read_text(
+                            encoding="utf-8"
+                        )
+                    )
+
+                    cached_items = cache_data.get(
+                        "items",
+                        []
+                    )
+
+                    if isinstance(cached_items, list):
+                        sns_items = [
+                            item
+                            for item in cached_items
+                            if item.get("category") == "SNS"
+                        ]
+
+                except (
+                    json.JSONDecodeError,
+                    OSError,
+                ) as e:
+                    print(
+                        "[홈 SNS 캐시] 불러오기 실패:",
+                        repr(e),
+                    )
 
             def sns_sort_key(item):
                 try:
@@ -2114,18 +2195,18 @@ def main(page: ft.Page):
             padding=20,
             border_radius=16,
             bgcolor="#F5F5F5",
-            url="https://m.ticket.melon.com/public/index.html#action",
+            url="https://ticket.melon.com/csoon/detail.htm?csoonId=12858",
             content=ft.Row(
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     ft.Row(
+                        expand=True,
                         spacing=12,
                         controls=[
-                            ft.Text(
-                                "🎟️",
-                                size=28,
-                            ),
+                            ft.Text("🎟️", size=28),
                             ft.Column(
+                                expand=True,
                                 spacing=3,
                                 controls=[
                                     ft.Text(
@@ -2138,14 +2219,14 @@ def main(page: ft.Page):
                                         size=13,
                                         color="#666666",
                                     ),
+                                    ft.Text(t("ticket_earlybird"), size=12, color="#555555"),
+                                    ft.Text(t("ticket_fast"), size=12, color="#555555"),
+                                    ft.Text(t("ticket_general"), size=12, color="#555555"),
                                 ],
                             ),
                         ],
                     ),
-                    ft.Icon(
-                        ft.Icons.OPEN_IN_NEW,
-                        size=22,
-                    ),
+                    ft.Icon(ft.Icons.OPEN_IN_NEW, size=22),
                 ],
             ),
         )
@@ -2354,7 +2435,6 @@ def main(page: ft.Page):
         categories = [
             "SNS",
             "공개",
-            "공지",
         ]
 
         if e is not None:
@@ -2515,7 +2595,7 @@ def main(page: ft.Page):
             news_sub_category = "X"
 
             news_tabs_control = ft.Tabs(
-                length=3,
+                length=2,
                 selected_index=0,
                 on_change=news_tab_changed,
                 content=ft.Column(
@@ -2538,7 +2618,6 @@ def main(page: ft.Page):
                             tabs=[
                                 ft.Tab(label=t("sns")),
                                 ft.Tab(label=t("public")),
-                                ft.Tab(label=t("notice")),
                             ],
                         ),
                     ],
@@ -2592,24 +2671,111 @@ def main(page: ft.Page):
 
         elif index == 2:
             # ==============================
-            # 스테이지 임시 데이터
+            # AGF 스테이지 - 타임테이블
             # ==============================
-            stage_data = {
-                "12월 4일(금)": {
-                    "Red": [],
-                    "Blue": [],
-                },
-                "12월 5일(토)": {
-                    "Red": [],
-                    "Blue": [],
-                },
-                "12월 6일(일)": {
-                    "Red": [],
-                    "Blue": [],
-                },
+            stage_date_names = [
+                "12월 4일(금)",
+                "12월 5일(토)",
+                "12월 6일(일)",
+            ]
+
+            # 임시 시간표: 실제 일정 공개 후 TIME/STAGE/GUEST 데이터를 교체합니다.
+            # RED / BLUE는 서로 다른 TIME 슬롯을 사용합니다.
+            RED_TIME_SLOTS = [
+                "10:30~11:15",
+                "11:45~12:30",
+                "13:00~13:45",
+                "14:15~15:00",
+                "15:30~16:15",
+                "16:45~17:30",
+            ]
+            BLUE_TIME_SLOTS = [
+                "10:30~11:00",
+                "11:30~12:30",
+                "13:00~13:45",
+                "14:15~15:00",
+                "15:30~16:15",
+                "16:45~17:30",
+            ]
+            STAGE_TIME_SLOTS = {
+                "Red": RED_TIME_SLOTS,
+                "Blue": BLUE_TIME_SLOTS,
             }
 
+            def time_sort_key(value):
+                m = re.search(r"(\d{1,2}):(\d{2})", str(value or ""))
+                if not m:
+                    return (99, 99, str(value or ""))
+                return (int(m.group(1)), int(m.group(2)), str(value or ""))
+
+            def build_default_stage_data():
+                return {
+                    d: {
+                        stage_name: [
+                            {"time": time_value, "title": "", "guest": ""}
+                            for time_value in STAGE_TIME_SLOTS[stage_name]
+                        ]
+                        for stage_name in ["Red", "Blue"]
+                    }
+                    for d in stage_date_names
+                }
+
+            def ensure_stage_time_slots(data):
+                for date_name in stage_date_names:
+                    if not isinstance(data.get(date_name), dict):
+                        data[date_name] = {"Red": [], "Blue": []}
+
+                    for stage_name in ["Red", "Blue"]:
+                        if not isinstance(data[date_name].get(stage_name), list):
+                            data[date_name][stage_name] = []
+
+                    red_items = data[date_name]["Red"]
+                    blue_items = data[date_name]["Blue"]
+                    for stage_name in ["Red", "Blue"]:
+                        stage_items_list = data[date_name][stage_name]
+                        existing_times = {
+                            str(item.get("time", "")).strip()
+                            for item in stage_items_list
+                            if isinstance(item, dict)
+                        }
+                        for time_value in STAGE_TIME_SLOTS[stage_name]:
+                            if time_value not in existing_times:
+                                stage_items_list.append(
+                                    {"time": time_value, "title": "", "guest": ""}
+                                )
+
+                        # 실제 데이터가 있어도 임시 시간 슬롯은 유지하고, 항상 시간순으로 표시합니다.
+                        stage_items_list.sort(
+                            key=lambda x: time_sort_key(x.get("time", ""))
+                        )
+
+                return data
+
+            def load_stage_data():
+                default = build_default_stage_data()
+                stage_file = Path(__file__).with_name("stage_data.json")
+                if not stage_file.exists():
+                    return default
+                try:
+                    data = json.loads(stage_file.read_text(encoding="utf-8"))
+                    if not isinstance(data, dict):
+                        return default
+                    return ensure_stage_time_slots(data)
+                except (json.JSONDecodeError, OSError):
+                    return default
+
+            def save_stage_data():
+                stage_file = Path(__file__).with_name("stage_data.json")
+                stage_file.write_text(
+                    json.dumps(stage_data, ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+
+            stage_data = load_stage_data()
             guest_data = {}
+            stage_admin_password = os.getenv("AGF_ADMIN_PASSWORD", "")
+            stage_selected_date = stage_date_names[0]
+            stage_selected_name = "Red"
 
             stage_date_labels = {
                 "12월 4일(금)": t("schedule_date_1"),
@@ -2618,10 +2784,22 @@ def main(page: ft.Page):
             }
 
             def get_stage_date_label(date_name):
-                return stage_date_labels.get(
-                    date_name,
-                    date_name,
-                )
+                return stage_date_labels.get(date_name, date_name)
+
+            def stage_items(date_name, stage_name):
+                rows = []
+                for item_index, item in enumerate(
+                    stage_data.get(date_name, {}).get(stage_name, [])
+                ):
+                    row = dict(item)
+                    row["stage_name"] = stage_name
+                    row["_index"] = item_index
+                    row.setdefault("time", "")
+                    row.setdefault("title", "")
+                    row.setdefault("guest", "")
+                    rows.append(row)
+                rows.sort(key=lambda item: time_sort_key(item.get("time", "")))
+                return rows
 
             def show_guest_detail(guest_name):
                 guest = guest_data.get(
@@ -2635,17 +2813,16 @@ def main(page: ft.Page):
                 )
 
                 guest_schedule = []
-
-                for date_name, stages in stage_data.items():
-                    for stage_name, items in stages.items():
-                        for item in items:
-                            if item["guest"] == guest_name:
+                for date_name in stage_date_names:
+                    for stage_name in ["Red", "Blue"]:
+                        for item in stage_items(date_name, stage_name):
+                            if item.get("guest", "") == guest_name and guest_name:
                                 guest_schedule.append(
                                     {
                                         "date": get_stage_date_label(date_name),
                                         "stage": stage_name,
-                                        "time": item["time"],
-                                        "title": item["title"],
+                                        "time": item.get("time", ""),
+                                        "title": item.get("title", ""),
                                     }
                                 )
 
@@ -2655,31 +2832,14 @@ def main(page: ft.Page):
                         tooltip=t("stage"),
                         on_click=lambda e: change_page(index=2),
                     ),
-                    title=ft.Text(
-                        t("guest_card"),
-                        size=21,
-                        weight=ft.FontWeight.BOLD,
-                    ),
+                    title=ft.Text(t("guest_card"), size=21, weight=ft.FontWeight.BOLD),
                     center_title=False,
                     bgcolor="#FFFFFF",
                     elevation=2,
                     toolbar_height=68,
-                    actions=[
-                        ft.IconButton(
-                            icon=ft.Icons.NOTIFICATIONS_OUTLINED,
-                            tooltip=t("notification"),
-                            on_click=notification_clicked,
-                        ),
-                        ft.IconButton(
-                            icon=ft.Icons.MENU,
-                            tooltip=t("menu"),
-                            on_click=menu_clicked,
-                        ),
-                    ],
                 )
 
                 schedule_controls = []
-
                 if guest_schedule:
                     for schedule in guest_schedule:
                         schedule_controls.append(
@@ -2693,16 +2853,8 @@ def main(page: ft.Page):
                                         ft.Column(
                                             spacing=3,
                                             controls=[
-                                                ft.Text(
-                                                    schedule["date"],
-                                                    size=13,
-                                                    color="#666666",
-                                                ),
-                                                ft.Text(
-                                                    schedule["stage"],
-                                                    size=15,
-                                                    weight=ft.FontWeight.BOLD,
-                                                ),
+                                                ft.Text(schedule["date"], size=13, color="#666666"),
+                                                ft.Text(schedule["stage"], size=15, weight=ft.FontWeight.BOLD),
                                             ],
                                         ),
                                         ft.Container(
@@ -2710,15 +2862,8 @@ def main(page: ft.Page):
                                             content=ft.Column(
                                                 spacing=3,
                                                 controls=[
-                                                    ft.Text(
-                                                        schedule["time"],
-                                                        size=14,
-                                                        weight=ft.FontWeight.BOLD,
-                                                    ),
-                                                    ft.Text(
-                                                        schedule["title"],
-                                                        size=14,
-                                                    ),
+                                                    ft.Text(schedule["time"], size=14, weight=ft.FontWeight.BOLD),
+                                                    ft.Text(schedule["title"], size=14),
                                                 ],
                                             ),
                                         ),
@@ -2728,11 +2873,7 @@ def main(page: ft.Page):
                         )
                 else:
                     schedule_controls.append(
-                        ft.Text(
-                            t("schedule_empty"),
-                            size=14,
-                            color="#666666",
-                        )
+                        ft.Text(t("schedule_empty"), size=14, color="#666666")
                     )
 
                 content_area.content = ft.Column(
@@ -2745,297 +2886,384 @@ def main(page: ft.Page):
                                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                                 spacing=12,
                                 controls=[
-                                    ft.Text(
-                                        guest["name"],
-                                        size=24,
-                                        weight=ft.FontWeight.BOLD,
-                                        text_align=ft.TextAlign.CENTER,
-                                    ),
-                                    ft.Text(
-                                        guest["role"],
-                                        size=14,
-                                        color="#666666",
-                                        text_align=ft.TextAlign.CENTER,
-                                    ),
+                                    ft.Text(guest["name"], size=24, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                                    ft.Text(guest["role"], size=14, color="#666666", text_align=ft.TextAlign.CENTER),
                                 ],
                             ),
                         ),
                         ft.Container(
-                            margin=ft.Margin(
-                                left=20,
-                                right=20,
-                                bottom=20,
-                            ),
+                            margin=ft.Margin(left=20, right=20, bottom=20),
                             padding=20,
                             border_radius=15,
                             bgcolor="#FFFFFF",
                             content=ft.Column(
                                 spacing=10,
                                 controls=[
-                                    ft.Text(
-                                        t("stage_appearances"),
-                                        size=18,
-                                        weight=ft.FontWeight.BOLD,
-                                    ),
+                                    ft.Text(t("stage_appearances"), size=18, weight=ft.FontWeight.BOLD),
                                     *schedule_controls,
                                 ],
                             ),
                         ),
-                        ft.Container(
-                            margin=ft.Margin(
-                                left=20,
-                                right=20,
-                                bottom=20,
-                            ),
-                            alignment=ft.Alignment.CENTER,
-                            content=ft.Text(
-                                t("guest_update_footer"),
-                                size=12,
-                                color="#777777",
-                                text_align=ft.TextAlign.CENTER,
-                            ),
-                        ),
                     ],
                 )
-
                 page.update()
 
             def show_stage_detail(date_name, stage_name, item):
                 dialog = ft.AlertDialog(
-                    title=ft.Text(
-                        item["title"],
-                        weight=ft.FontWeight.BOLD,
-                    ),
+                    title=ft.Text(item.get("title") or t("stage"), weight=ft.FontWeight.BOLD),
                     content=ft.Column(
                         tight=True,
                         spacing=10,
                         controls=[
                             ft.Text(f"📅 {get_stage_date_label(date_name)}"),
-                            ft.Text(f"🎤 {t('stage_label').format(name=stage_name)}"),
-                            ft.Text(f"🕒 {t('time_label')}: {item['time']}"),
-                            ft.Text(f"👤 {t('guest_label')}: {item['guest']}"),
+                            ft.Text(f"🎤 {stage_name} STAGE"),
+                            ft.Text(f"🕒 {t('time_label')}: {item.get('time', '')}"),
+                            ft.Text(f"👤 {t('guest_label')}: {item.get('guest', '') or '-'}"),
                         ],
                     ),
                     actions=[
-                        ft.TextButton(
-                            t("close"),
-                            on_click=lambda e: setattr(dialog, "open", False)
-                            or page.update(),
+                        ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog()),
+                    ],
+                )
+                page.show_dialog(dialog)
+
+            def save_stage_edit(date_name, stage_name, item_index, new_title, new_guest, dialog):
+                stage_list = stage_data.setdefault(date_name, {}).setdefault(stage_name, [])
+                if item_index >= len(stage_list):
+                    return
+                item = dict(stage_list[item_index])
+                item["title"] = (new_title or "").strip()
+                item["guest"] = (new_guest or "").strip()
+                stage_list[item_index] = item
+                stage_list.sort(key=lambda x: time_sort_key(x.get("time", "")))
+                save_stage_data()
+                dialog.open = False
+                page.update()
+                refresh_stage_view()
+
+            def show_stage_edit(date_name, stage_name, item_index):
+                if not admin_authenticated:
+                    show_admin_login()
+                    return
+                item = stage_data[date_name][stage_name][item_index]
+                title_field = ft.TextField(
+                    label=t("stage_edit"),
+                    value=item.get("title", ""),
+                    multiline=True,
+                )
+                guest_field = ft.TextField(
+                    label=t("guest_edit"),
+                    value=item.get("guest", ""),
+                    multiline=True,
+                )
+                time_text = ft.Text(
+                    f"{t('time_label')}: {item.get('time', '')}",
+                    size=13,
+                    color="#666666",
+                )
+                dialog = ft.AlertDialog(
+                    title=ft.Text(t("admin_edit"), weight=ft.FontWeight.BOLD),
+                    content=ft.Column(
+                        tight=True,
+                        spacing=10,
+                        controls=[time_text, title_field, guest_field],
+                    ),
+                    actions=[
+                        ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog()),
+                        ft.FilledButton(
+                            t("save"),
+                            on_click=lambda e: save_stage_edit(
+                                date_name,
+                                stage_name,
+                                item_index,
+                                title_field.value,
+                                guest_field.value,
+                                dialog,
+                            ),
                         ),
                     ],
                 )
                 page.show_dialog(dialog)
 
-            def build_stage_schedule(date_name, stage_name):
-                items = stage_data.get(
-                    date_name,
-                    {},
-                ).get(
-                    stage_name,
-                    [],
+            def build_stage_table(date_name, stage_name):
+                rows = stage_items(date_name, stage_name)
+                header = ft.Container(
+                    bgcolor="#F5F5F5",
+                    padding=ft.Padding(left=10, right=10, top=10, bottom=10),
+                    content=ft.Row(
+                        spacing=0,
+                        controls=[
+                            ft.Container(
+                                width=105,
+                                content=ft.Text("TIME", weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                            ),
+                            ft.Container(
+                                expand=True,
+                                content=ft.Text("STAGE", weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                            ),
+                            ft.Container(
+                                width=200,
+                                content=ft.Text("GUEST", weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                            ),
+                            ft.Container(width=42 if admin_authenticated else 0),
+                        ],
+                    ),
                 )
 
-                if not items:
-                    content = ft.Container(
-                        padding=30,
-                        alignment=ft.Alignment.CENTER,
-                        content=ft.Column(
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                            spacing=8,
-                            controls=[
-                                ft.Icon(
-                                    ft.Icons.EVENT_OUTLINED,
-                                    size=45,
-                                ),
-                                ft.Text(
-                                    t("stage_schedule_pending"),
-                                    size=17,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    f"{get_stage_date_label(date_name)} · {t('stage_label').format(name=stage_name)}",
-                                    size=13,
-                                    color="#777777",
-                                    text_align=ft.TextAlign.CENTER,
-                                ),
-                            ],
-                        ),
+                row_controls = [header]
+                if not rows:
+                    row_controls.append(
+                        ft.Container(
+                            padding=25,
+                            bgcolor="#FFFFFF",
+                            alignment=ft.Alignment.CENTER,
+                            content=ft.Text(
+                                t("stage_schedule_pending"),
+                                size=14,
+                                color="#777777",
+                                text_align=ft.TextAlign.CENTER,
+                            ),
+                        )
                     )
                 else:
-                    timeline_controls = []
+                    for item in rows:
+                        actual_index = item.get("_index", 0)
+                        title = item.get("title", "")
+                        guest = item.get("guest", "")
 
-                    for item in items:
-                        timeline_controls.append(
+                        stage_text = title if title else "-"
+                        guest_text = guest if guest else "-"
+                        stage_color = None if title else "#BBBBBB"
+                        guest_color = None if guest else "#BBBBBB"
+
+                        row_controls_inner = [
                             ft.Container(
-                                padding=15,
-                                border_radius=12,
-                                bgcolor="#F5F5F5",
-                                on_click=lambda e, item=item: show_stage_detail(
-                                    date_name,
-                                    stage_name,
-                                    item,
+                                width=105,
+                                padding=ft.Padding(left=5, right=5, top=14, bottom=14),
+                                alignment=ft.Alignment.CENTER,
+                                content=ft.Text(
+                                    item.get("time", ""),
+                                    size=14,
+                                    weight=ft.FontWeight.BOLD,
+                                    text_align=ft.TextAlign.CENTER,
                                 ),
-                                content=ft.Row(
-                                    spacing=12,
-                                    vertical_alignment=ft.CrossAxisAlignment.START,
-                                    controls=[
-                                        ft.Container(
-                                            width=65,
-                                            content=ft.Text(
-                                                item.get("time", ""),
-                                                size=14,
-                                                weight=ft.FontWeight.BOLD,
-                                            ),
-                                        ),
-                                        ft.Container(
-                                            width=3,
-                                            height=65,
-                                            bgcolor="#CCCCCC",
-                                            border_radius=2,
-                                        ),
-                                        ft.Column(
-                                            expand=True,
-                                            spacing=4,
-                                            controls=[
-                                                ft.Text(
-                                                    item.get("title", ""),
-                                                    size=16,
-                                                    weight=ft.FontWeight.BOLD,
-                                                ),
-                                                ft.Text(
-                                                    item.get("guest", ""),
-                                                    size=13,
-                                                    color="#666666",
-                                                ),
-                                            ],
-                                        ),
-                                    ],
+                            ),
+                            ft.Container(
+                                expand=True,
+                                padding=ft.Padding(left=8, right=8, top=14, bottom=14),
+                                alignment=ft.Alignment.CENTER,
+                                content=ft.Text(
+                                    stage_text,
+                                    size=14,
+                                    color=stage_color,
+                                    text_align=ft.TextAlign.CENTER,
                                 ),
+                            ),
+                            ft.Container(
+                                width=200,
+                                padding=ft.Padding(left=8, right=8, top=14, bottom=14),
+                                alignment=ft.Alignment.CENTER,
+                                content=ft.Text(
+                                    guest_text,
+                                    size=13,
+                                    color=guest_color,
+                                    text_align=ft.TextAlign.CENTER,
+                                ),
+                            ),
+                        ]
+
+                        if admin_authenticated:
+                            row_controls_inner.append(
+                                ft.Container(
+                                    width=42,
+                                    alignment=ft.Alignment.CENTER,
+                                    content=ft.IconButton(
+                                        icon=ft.Icons.EDIT_OUTLINED,
+                                        tooltip=t("admin_edit"),
+                                        on_click=lambda e, d=date_name, st=stage_name, idx=actual_index: show_stage_edit(d, st, idx),
+                                    ),
+                                )
                             )
+
+                        row = ft.Container(
+                            border=ft.Border(bottom=ft.BorderSide(1, "#E0E0E0")),
+                            bgcolor="#FFFFFF",
+                            content=ft.Row(
+                                spacing=0,
+                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                controls=row_controls_inner,
+                            ),
                         )
 
-                    content = ft.Column(
-                        spacing=10,
-                        scroll=ft.ScrollMode.AUTO,
-                        controls=timeline_controls,
-                    )
+                        if not admin_authenticated and (title or guest):
+                            row.on_click = lambda e, d=date_name, st=stage_name, it=item: show_stage_detail(d, st, it)
+
+                        row_controls.append(row)
 
                 return ft.Container(
-                    expand=True,
-                    padding=10,
+                    margin=ft.Margin(left=10, right=10, bottom=10),
                     border_radius=14,
-                    bgcolor="#FFFFFF",
-                    content=content,
+                    clip_behavior=ft.ClipBehavior.ANTI_ALIAS,
+                    content=ft.Column(spacing=0, controls=row_controls),
                 )
 
-            stage_tabs = []
+            stage_table_host = ft.Container(expand=True)
+            stage_tabs_control = None
+            date_tabs_control = None
 
-            for stage_name in ["Red", "Blue"]:
-                date_tabs = []
+            def refresh_stage_view():
+                if date_tabs_control is not None:
+                    date_tabs_control.selected_index = stage_date_names.index(stage_selected_date)
 
-                for date_name in stage_data.keys():
-                    date_tabs.append(
-                        ft.Container(
-                            expand=True,
-                            padding=10,
-                            content=build_stage_schedule(
-                                date_name,
-                                stage_name,
+                if stage_tabs_control is not None:
+                    stage_tabs_control.selected_index = 0 if stage_selected_name == "Red" else 1
+
+                stage_table_host.content = build_stage_table(stage_selected_date, stage_selected_name)
+                page.update()
+
+            def select_stage_date(date_name):
+                nonlocal stage_selected_date
+                stage_selected_date = date_name
+                refresh_stage_view()
+
+            def date_tab_changed(e):
+                select_stage_date(stage_date_names[e.control.selected_index])
+
+            def select_stage_name(stage_name):
+                nonlocal stage_selected_name
+                stage_selected_name = stage_name
+                refresh_stage_view()
+
+            date_tabs_control = ft.Tabs(
+                length=3,
+                selected_index=0,
+                on_change=date_tab_changed,
+                content=ft.Column(
+                    controls=[
+                        ft.TabBar(
+                            height=54,
+                            scrollable=False,
+                            tab_alignment=ft.TabAlignment.FILL,
+                            indicator_thickness=3,
+                            label_text_style=ft.TextStyle(
+                                size=15,
+                                weight=ft.FontWeight.BOLD,
                             ),
+                            tabs=[
+                                ft.Tab(label="12/4"),
+                                ft.Tab(label="12/5"),
+                                ft.Tab(label="12/6"),
+                            ],
+                        ),
+                    ],
+                ),
+            )
+
+            def stage_tab_changed(e):
+                select_stage_name("Red" if e.control.selected_index == 0 else "Blue")
+
+            stage_tabs_control = ft.Tabs(
+                length=2,
+                selected_index=0,
+                on_change=stage_tab_changed,
+                content=ft.Column(
+                    controls=[
+                        ft.TabBar(
+                            height=54,
+                            scrollable=False,
+                            tab_alignment=ft.TabAlignment.FILL,
+                            indicator_thickness=3,
+                            tabs=[
+                                ft.Tab(label="RED STAGE"),
+                                ft.Tab(label="BLUE STAGE"),
+                            ],
+                        ),
+                    ],
+                ),
+            )
+
+            stage_table_host.content = build_stage_table(stage_selected_date, stage_selected_name)
+
+            def show_admin_login():
+                nonlocal admin_authenticated
+                if not stage_admin_password:
+                    page.show_dialog(
+                        ft.AlertDialog(
+                            title=ft.Text(t("admin"), weight=ft.FontWeight.BOLD),
+                            content=ft.Text(t("admin_password_missing")),
+                            actions=[ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog())],
                         )
                     )
+                    return
 
-                stage_tabs.append(
-                    ft.Container(
-                        expand=True,
-                        padding=10,
-                        content=ft.Tabs(
-                            length=3,
-                            selected_index=0,
-                            expand=True,
-                            content=ft.Column(
-                                expand=True,
-                                controls=[
-                                    ft.TabBar(
-                                        scrollable=False,
-                                        tab_alignment=ft.TabAlignment.FILL,
-                                        indicator_thickness=3,
-                                        tabs=[
-                                            ft.Tab(label="12/4"),
-                                            ft.Tab(label="12/5"),
-                                            ft.Tab(label="12/6"),
-                                        ],
-                                    ),
-                                    ft.Container(
-                                        expand=True,
-                                        content=ft.TabBarView(
-                                            controls=date_tabs,
-                                        ),
-                                    ),
-                                ],
-                            ),
-                        ),
+                password_field = ft.TextField(
+                    label=t("admin_password"),
+                    password=True,
+                    can_reveal_password=True,
+                    autofocus=True,
+                )
+
+                def unlock(e):
+                    nonlocal admin_authenticated
+                    if password_field.value == stage_admin_password:
+                        admin_authenticated = True
+                        page.pop_dialog()
+                        refresh_stage_view()
+                    else:
+                        password_field.error_text = t("admin_wrong_password")
+                        password_field.update()
+
+                page.show_dialog(
+                    ft.AlertDialog(
+                        title=ft.Text(t("admin"), weight=ft.FontWeight.BOLD),
+                        content=password_field,
+                        actions=[
+                            ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog()),
+                            ft.FilledButton(t("admin_unlock"), on_click=unlock),
+                        ],
                     )
                 )
+
+            def lock_admin():
+                nonlocal admin_authenticated
+                admin_authenticated = False
+                refresh_stage_view()
 
             content_area.content = ft.Column(
                 expand=True,
+                scroll=ft.ScrollMode.AUTO,
                 spacing=0,
                 controls=[
                     ft.Container(
-                        padding=20,
-                        content=ft.Column(
-                            spacing=5,
+                        padding=ft.Padding(left=20, right=20, top=20, bottom=10),
+                        content=ft.Row(
+                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
                             controls=[
-                                ft.Text(
-                                    t("stage_title"),
-                                    size=26,
-                                    weight=ft.FontWeight.BOLD,
+                                ft.Column(
+                                    spacing=4,
+                                    controls=[
+                                        ft.Text(t("stage_title"), size=26, weight=ft.FontWeight.BOLD),
+                                        ft.Text(t("stage_desc_main"), size=14, color="#666666"),
+                                    ],
                                 ),
-                                ft.Text(
-                                    t("stage_desc_main"),
-                                    size=14,
-                                    color="#666666",
+                                ft.IconButton(
+                                    icon=ft.Icons.LOCK_OPEN_OUTLINED if admin_authenticated else ft.Icons.LOCK_OUTLINED,
+                                    tooltip=t("admin_edit") if not admin_authenticated else t("admin_locked"),
+                                    on_click=lambda e: lock_admin() if admin_authenticated else show_admin_login(),
                                 ),
                             ],
                         ),
                     ),
                     ft.Container(
-                        expand=True,
-                        margin=ft.Margin(
-                            left=20,
-                            right=20,
-                            bottom=20,
-                        ),
-                        padding=10,
-                        border_radius=15,
-                        bgcolor="#F5F5F5",
-                        content=ft.Tabs(
-                            length=2,
-                            selected_index=0,
-                            expand=True,
-                            content=ft.Column(
-                                expand=True,
-                                controls=[
-                                    ft.TabBar(
-                                        scrollable=False,
-                                        tab_alignment=ft.TabAlignment.FILL,
-                                        indicator_thickness=3,
-                                        tabs=[
-                                            ft.Tab(label="Red"),
-                                            ft.Tab(label="Blue"),
-                                        ],
-                                    ),
-                                    ft.Container(
-                                        expand=True,
-                                        content=ft.TabBarView(
-                                            controls=stage_tabs,
-                                        ),
-                                    ),
-                                ],
-                            ),
-                        ),
+                        margin=ft.Margin(left=20, right=20, bottom=8),
+                        content=date_tabs_control,
                     ),
+                    ft.Container(
+                        margin=ft.Margin(left=20, right=20, bottom=10),
+                        content=stage_tabs_control,
+                    ),
+                    stage_table_host,
                 ],
             )
 
@@ -3216,61 +3444,65 @@ def main(page: ft.Page):
                         )
                     )
 
-            if map_file.exists():
-                map_view = ft.Container(
-                    height=350,
-                    alignment=ft.Alignment.CENTER,
-                    border_radius=12,
-                    bgcolor="#FFFFFF",
-                    content=ft.Image(
-                        src=map_file.read_bytes(),
-                        width=float("inf"),
-                        height=330,
-                        fit=ft.BoxFit.CONTAIN,
-                        error_content=ft.Column(
+            def build_booth_layout():
+                # 기존 부스 배치도 이미지 복원
+                if map_file.exists():
+                    return ft.Container(
+                        height=350,
+                        alignment=ft.Alignment.CENTER,
+                        border_radius=12,
+                        bgcolor="#FFFFFF",
+                        content=ft.Image(
+                            src=map_file.read_bytes(),
+                            width=float("inf"),
+                            height=330,
+                            fit=ft.BoxFit.CONTAIN,
+                            error_content=ft.Column(
+                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                                alignment=ft.MainAxisAlignment.CENTER,
+                                controls=[
+                                    ft.Icon(
+                                        ft.Icons.MAP_OUTLINED,
+                                        size=50,
+                                    ),
+                                    ft.Text(
+                                        "배치도 이미지를 불러오지 못했습니다.",
+                                        size=15,
+                                    ),
+                                ],
+                            ),
+                        ),
+                    )
+                else:
+                    return ft.Container(
+                        height=350,
+                        alignment=ft.Alignment.CENTER,
+                        border_radius=12,
+                        bgcolor="#FFFFFF",
+                        content=ft.Column(
                             horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                             alignment=ft.MainAxisAlignment.CENTER,
+                            spacing=8,
                             controls=[
                                 ft.Icon(
                                     ft.Icons.MAP_OUTLINED,
-                                    size=50,
+                                    size=55,
                                 ),
                                 ft.Text(
-                                    t("map_load_error"),
-                                    size=15,
+                                    "AGF 2026 부스 배치도",
+                                    size=18,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                                ft.Text(
+                                    "실제 배치도 공개 후 업데이트 예정",
+                                    size=13,
+                                    color="#666666",
                                 ),
                             ],
                         ),
-                    ),
-                )
-            else:
-                map_view = ft.Container(
-                    height=350,
-                    alignment=ft.Alignment.CENTER,
-                    border_radius=12,
-                    bgcolor="#FFFFFF",
-                    content=ft.Column(
-                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        spacing=8,
-                        controls=[
-                            ft.Icon(
-                                ft.Icons.MAP_OUTLINED,
-                                size=55,
-                            ),
-                            ft.Text(
-                                t("map_pending"),
-                                size=18,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.Text(
-                                t("map_update_pending"),
-                                size=13,
-                                color="#666666",
-                            ),
-                        ],
-                    ),
-                )
+                    )
+
+            map_view = build_booth_layout()
 
             content_area.content = ft.Column(
                 expand=True,
@@ -3428,95 +3660,44 @@ def main(page: ft.Page):
 
     page.navigation_bar = navigation
 
-    # ==============================
-    # 55분마다 공식 공지 + X + Instagram 확인
-    # ==============================
-    async def auto_refresh_news():
-        nonlocal news_initialized
-
-        while True:
-            await asyncio.sleep(3300)
-
-            if not notifications_enabled:
-                continue
-
-            news_items = fetch_all_news() or []
-
-            if not news_initialized:
-                for item in news_items:
-                    if item["url"] not in seen_news:
-                        seen_news.append(item["url"])
-
-                news_initialized = True
-                save_settings()
-                print("기존 소식 초기화 완료")
-                continue
-
-            new_items = []
-            batch_urls = set()
-
-            for item in news_items:
-                url = item["url"]
-
-                if url in seen_news:
-                    continue
-
-                if url in batch_urls:
-                    continue
-
-                batch_urls.add(url)
-                new_items.append(item)
-
-            if not new_items:
-                continue
-
-            for item in new_items:
-                seen_news.append(item["url"])
-
-            if news_content is not None:
-                for item in reversed(new_items):
-                    news_content.controls.insert(
-                        0,
-                        build_news_card(item),
-                    )
-
-            for item in new_items:
-                show_windows_notification(
-                    f"{t('app_title')} {get_news_source_text(item)} {t('new_update')}",
-                    item["title"],
-                    item["url"],
-                )
-
-            save_settings()
-
-            if news_content is not None:
-                page.update()
-
-    page.run_task(auto_refresh_news)
 
     page.add(content_area)
+
+    # ==============================
+    # 웹사이트 자체 공지 팝업
+    # ==============================
+    SITE_NOTICE_ID = "2026-10-08-update-02"
+
+    def show_site_notice_if_needed():
+        if SITE_NOTICE_ID in seen_notices:
+            return
+
+        def close_notice(e):
+            if SITE_NOTICE_ID not in seen_notices:
+                seen_notices.append(SITE_NOTICE_ID)
+                save_settings()
+            page.pop_dialog()
+
+        dialog = ft.AlertDialog(
+            title=ft.Text(t("site_notice_title"), weight=ft.FontWeight.BOLD),
+            content=ft.Text(t("site_notice_message"), size=15),
+            actions=[ft.TextButton(t("confirm"), on_click=close_notice)],
+        )
+        page.show_dialog(dialog)
 
     # ==============================
     # 베타 테스트 안내 팝업
     # ==============================
     def show_beta_dialog():
-        dialog = ft.AlertDialog(
-            title=ft.Text(
-                t("beta_dialog_title"),
-                weight=ft.FontWeight.BOLD,
-            ),
-            content=ft.Text(
-                t("beta_dialog_message"),
-                size=15,
-            ),
-            actions=[	
-                ft.TextButton(
-                    t("close"),
-                    on_click=lambda e: page.pop_dialog(),
-                ),
-            ],
-        )
+        def close_beta(e):
+            page.pop_dialog()
+            show_site_notice_if_needed()
 
+        dialog = ft.AlertDialog(
+            title=ft.Text(t("beta_dialog_title"), weight=ft.FontWeight.BOLD),
+            content=ft.Text(t("beta_dialog_message"), size=15),
+            actions=[ft.TextButton(t("close"), on_click=close_beta)],
+        )
         page.show_dialog(dialog)
 
     show_beta_dialog()
