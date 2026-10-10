@@ -42,7 +42,7 @@ def fetch_sns_news():
     rss_queries = [
         (
             "X",
-            "site:x.com/AGF_Korea AGF 2026",
+            "site:x.com/AGF_Korea",
         ),
         (
             "Instagram",
