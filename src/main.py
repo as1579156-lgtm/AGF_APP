@@ -2255,8 +2255,7 @@ def main(page: ft.Page):
                     "[홈 SNS] 최신 수집 실패:",
                     repr(e),
                 )
-                
-                    
+                       
             def sns_sort_key(item):
                 try:
                     return parsedate_to_datetime(
