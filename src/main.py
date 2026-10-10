@@ -2226,19 +2226,36 @@ def main(page: ft.Page):
                         repr(e),
                     )
             
-            # 캐시가 비어 있으면 실시간 SNS 수집
-            if not sns_items:
-                try:
-                    sns_items = fetch_sns_news() or []
-                    print(
-                        "[홈 SNS] 실시간 SNS 수집:",
-                        len(sns_items),
-                    )
-                except Exception as e:
-                    print(
-                        "[홈 SNS] 실시간 SNS 수집 실패:",
-                        repr(e),
-                    )
+            # 홈 화면을 열 때마다 최신 SNS 확인
+            try:
+                fetched_sns = fetch_sns_news() or []
+                merged_sns = {}
+
+                for item in sns_items:
+                    key = item.get("url") or item.get("title")
+                    if key:
+                        merged_sns[key] = item
+
+                for item in fetched_sns:
+                    key = item.get("url") or item.get("title")
+                    if key:
+                        merged_sns[key] = item
+
+                sns_items = list(merged_sns.values())
+
+                print(
+                    "[홈 SNS] 최신 수집:",
+                    len(fetched_sns),
+                    "최종 항목:",
+                    len(sns_items),
+                )
+
+            except Exception as e:
+                print(
+                    "[홈 SNS] 최신 수집 실패:",
+                    repr(e),
+                )
+                
                     
             def sns_sort_key(item):
                 try:
