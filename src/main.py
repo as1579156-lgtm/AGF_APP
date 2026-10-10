@@ -1920,19 +1920,19 @@ print(
 repr(e),
 )
 
-    # 캐시가 비어 있으면 실시간 뉴스 수집
-    if not new_items:
-        try:
-            new_items = fetch_all_news() or []
-            print(
-                "[뉴스] 실시간 뉴스 수집:",
-                len(new_items),
-            )
-        except Exception as e:
-            print(
-                "[뉴스] 실시간 수집 실패:",
-                repr(e),
-            )
+# 캐시가 비어 있으면 실시간 뉴스 수집
+if not new_items:
+try:
+new_items = fetch_all_news() or []
+print(
+"[뉴스] 실시간 뉴스 수집:",
+len(new_items),
+)
+except Exception as e:
+print(
+"[뉴스] 실시간 수집 실패:",
+repr(e),
+)
 
 all_news_items.clear()
 
