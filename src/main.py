@@ -2225,7 +2225,21 @@ def main(page: ft.Page):
                         "[홈 SNS 캐시] 불러오기 실패:",
                         repr(e),
                     )
-
+            
+            # 캐시가 비어 있으면 실시간 SNS 수집
+            if not sns_items:
+                try:
+                    sns_items = fetch_sns_news() or []
+                    print(
+                        "[홈 SNS] 실시간 SNS 수집:",
+                        len(sns_items),
+                    )
+                except Exception as e:
+                    print(
+                        "[홈 SNS] 실시간 SNS 수집 실패:",
+                        repr(e),
+                    )
+                    
             def sns_sort_key(item):
                 try:
                     return parsedate_to_datetime(
