@@ -39,16 +39,16 @@ map_file = (
 def fetch_sns_news():
     news_items = []
 
-    rss_queries = [
-        (
-            "X",
-            "site:x.com/AGF_Korea",
-        ),
-        (
-            "Instagram",
-            "site:instagram.com/agf_korea AGF 2026",
-        ),
-    ]
+rss_queries = [
+    (
+        "X",
+        "site:x.com/AGF_Korea when:30d",
+    ),
+    (
+        "Instagram",
+        "site:instagram.com/agf_korea AGF 2026",
+    ),
+]
 
     for sub_category, query in rss_queries:
         try:
