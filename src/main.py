@@ -50,7 +50,7 @@ rss_queries = [
     ),
 ]
 
-    for sub_category, query in rss_queries:
+for sub_category, query in rss_queries:
         try:
             rss_url = (
                 "https://news.google.com/rss/search?"
