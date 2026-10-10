@@ -50,7 +50,21 @@ rss_queries = [
     ),
 ]
 
-for sub_category, query in rss_queries:
+def fetch_sns_news():
+    news_items = []
+
+    rss_queries = [
+        (
+            "X",
+            "site:x.com/AGF_Korea when:30d",
+        ),
+        (
+            "Instagram",
+            "site:instagram.com/agf_korea AGF 2026",
+        ),
+    ]
+
+    for sub_category, query in rss_queries:
         try:
             rss_url = (
                 "https://news.google.com/rss/search?"
@@ -64,7 +78,10 @@ for sub_category, query in rss_queries:
                 rss_url,
                 headers={
                     "User-Agent": "Mozilla/5.0",
-                    "Accept": "application/rss+xml, application/xml, text/xml",
+                    "Accept": (
+                        "application/rss+xml, "
+                        "application/xml, text/xml"
+                    ),
                 },
             )
 
@@ -78,19 +95,25 @@ for sub_category, query in rss_queries:
             count = 0
 
             for item in root.findall(".//item"):
-                title = item.findtext("title", "").strip()
-                link = item.findtext("link", "").strip()
-                pub_date = item.findtext("pubDate", "").strip()
+                title = item.findtext(
+                    "title",
+                    "",
+                ).strip()
+
+                link = item.findtext(
+                    "link",
+                    "",
+                ).strip()
+
+                pub_date = item.findtext(
+                    "pubDate",
+                    "",
+                ).strip()
 
                 if not title or not link:
                     continue
 
-                # X 답글/댓글성 게시물 제외
-                if sub_category == "X":
-                    lower_title = title.lower()
-
-                # X는 날짜가 확인되면 2026년 자료만 표시
-                # 날짜가 없는 자료는 일단 표시
+                # X 게시물은 날짜가 확인되면 현재 연도만 표시
                 if sub_category == "X" and pub_date:
                     try:
                         parsed_date = parsedate_to_datetime(
@@ -110,7 +133,9 @@ for sub_category, query in rss_queries:
                         "category": "SNS",
                         "sub_category": sub_category,
                         "date": pub_date,
-                        "source": f"출처: AGF Korea {sub_category}",
+                        "source": (
+                            f"출처: AGF Korea {sub_category}"
+                        ),
                     }
                 )
 
@@ -133,7 +158,6 @@ for sub_category, query in rss_queries:
     )
 
     return news_items
-
 
 def fetch_public_news():
     page_data = [
