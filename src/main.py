@@ -1,16 +1,16 @@
 import flet as ft
+try:
+    import flet_webview as fwv
+except ImportError:
+    fwv = None
 import json
 from pathlib import Path
 import urllib.request
-from urllib.parse import (
-    urljoin,
-    quote,
-)
+from urllib.parse import urljoin
 from datetime import date
 from email.utils import parsedate_to_datetime
 import os
 import re
-import xml.etree.ElementTree as ET
 
 if os.name == "nt":
     from winotify import Notification
@@ -36,128 +36,31 @@ map_file = (
     / f"agf_{CURRENT_YEAR}_booth_map.png"
 )
 
-def fetch_sns_news():
-    news_items = []
-
-rss_queries = [
-    (
-        "X",
-        "site:x.com/AGF_Korea when:30d",
-    ),
-    (
-        "Instagram",
-        "site:instagram.com/agf_korea AGF 2026",
-    ),
-]
-
-def fetch_sns_news():
-    news_items = []
-
-    rss_queries = [
-        (
-            "X",
-            "site:x.com/AGF_Korea when:30d",
-        ),
-        (
-            "Instagram",
-            "site:instagram.com/agf_korea AGF 2026",
-        ),
+def get_official_sns_links():
+    return [
+        {
+            "title": "AGF Korea 공식 X",
+            "url": "https://x.com/AGF_Korea",
+            "category": "SNS",
+            "sub_category": "X",
+            "date": "",
+            "source": "출처: AGF Korea X",
+            "description": (
+                "최신 게시물은 AGF Korea 공식 X에서 확인하세요."
+            ),
+        },
+        {
+            "title": "AGF Korea 공식 Instagram",
+            "url": "https://www.instagram.com/agf_korea/",
+            "category": "SNS",
+            "sub_category": "Instagram",
+            "date": "",
+            "source": "출처: AGF Korea Instagram",
+            "description": (
+                "최신 소식은 AGF Korea 공식 Instagram에서 확인하세요."
+            ),
+        },
     ]
-
-    for sub_category, query in rss_queries:
-        try:
-            rss_url = (
-                "https://news.google.com/rss/search?"
-                f"q={quote(query)}"
-                "&hl=ko"
-                "&gl=KR"
-                "&ceid=KR:ko"
-            )
-
-            request = urllib.request.Request(
-                rss_url,
-                headers={
-                    "User-Agent": "Mozilla/5.0",
-                    "Accept": (
-                        "application/rss+xml, "
-                        "application/xml, text/xml"
-                    ),
-                },
-            )
-
-            with urllib.request.urlopen(
-                request,
-                timeout=10,
-            ) as response:
-                xml_data = response.read()
-
-            root = ET.fromstring(xml_data)
-            count = 0
-
-            for item in root.findall(".//item"):
-                title = item.findtext(
-                    "title",
-                    "",
-                ).strip()
-
-                link = item.findtext(
-                    "link",
-                    "",
-                ).strip()
-
-                pub_date = item.findtext(
-                    "pubDate",
-                    "",
-                ).strip()
-
-                if not title or not link:
-                    continue
-
-                # X 게시물은 날짜가 확인되면 현재 연도만 표시
-                if sub_category == "X" and pub_date:
-                    try:
-                        parsed_date = parsedate_to_datetime(
-                            pub_date
-                        )
-
-                        if parsed_date.year != CURRENT_YEAR:
-                            continue
-
-                    except Exception:
-                        pass
-
-                news_items.append(
-                    {
-                        "title": title,
-                        "url": link,
-                        "category": "SNS",
-                        "sub_category": sub_category,
-                        "date": pub_date,
-                        "source": (
-                            f"출처: AGF Korea {sub_category}"
-                        ),
-                    }
-                )
-
-                count += 1
-
-            print(
-                f"[SNS RSS] {sub_category} "
-                f"가져온 항목 수: {count}"
-            )
-
-        except Exception as e:
-            print(
-                f"[SNS RSS] {sub_category} 처리 실패:",
-                repr(e),
-            )
-
-    print(
-        f"[SNS RSS] 최종 SNS 항목 수: "
-        f"{len(news_items)}"
-    )
-
-    return news_items
 
 def fetch_public_news():
     page_data = [
@@ -224,14 +127,14 @@ def fetch_all_news():
     all_items = []
 
     try:
-        all_items.extend(fetch_sns_news())
+        all_items.extend(get_official_sns_links())
     except Exception as e:
-        print("SNS 뉴스 처리 실패:", e)
+        print("공식 SNS 링크 처리 실패:", repr(e))
 
     try:
         all_items.extend(fetch_public_news())
     except Exception as e:
-        print("공개 정보 처리 실패:", e)
+        print("공개 정보 처리 실패:", repr(e))
 
     # ==============================
     # 중복 뉴스 제거
@@ -271,7 +174,6 @@ def fetch_all_news():
     )
 
     return unique_items
-
 
 def main(page: ft.Page):
     saved = False
@@ -380,6 +282,26 @@ def main(page: ft.Page):
 
     def is_tablet_layout():
         return 600 <= viewport_width() < 900
+
+    def responsive_size(base, minimum=None):
+        """화면 크기에 맞춰 글자 크기를 조절합니다."""
+        width = viewport_width()
+
+        if width < 360:
+            scale = 0.90
+        elif width < 600:
+            scale = 0.94
+        elif width < 900:
+            scale = 1.00
+        elif width < 1200:
+            scale = 1.02
+        else:
+            scale = 1.04
+
+        if minimum is None:
+            minimum = 11 if base <= 15 else 13
+
+        return max(minimum, int(round(base * scale)))
 
     def layout_side_padding():
         width = viewport_width()
@@ -2004,7 +1926,7 @@ center_title=True,
 
         new_items = []
 
-        # 자동 수집기가 저장한 캐시 사용
+        # 기존 뉴스 캐시 사용
         if cache_file.exists():
             try:
                 cache_data = json.loads(
@@ -2019,40 +1941,13 @@ center_title=True,
                 )
 
                 if isinstance(cached_items, list):
-                    filtered_cached_items = []
+                    # 기존 Google 뉴스 RSS에서 저장된 SNS 항목 제외
+                    filtered_cached_items = [
+                        item
+                        for item in cached_items
+                        if item.get("category") != "SNS"
+                    ]
 
-                    for item in cached_items:
-                        category = item.get("category")
-                        sub_category = item.get("sub_category")
-                        title = str(
-                            item.get("title", "")
-                        ).strip()
-                        news_date = str(
-                            item.get("date", "")
-                        ).strip()
-
-                        # SNS 필터
-                        if category == "SNS":
-
-                            # X: 다른 사람에게 답글한 게시물 제외
-                            if sub_category == "X":
-                                if title.lstrip().startswith("@"):
-                                    continue
-
-                            # X / Instagram: 현재 연도 자료만 표시
-                            if sub_category in ["X", "Instagram"] and news_date:
-                                try:
-                                    parsed = parsedate_to_datetime(
-                                        news_date
-                                    )
-
-                                    if parsed.year != CURRENT_YEAR:
-                                        continue
-
-                                except Exception:
-                                    pass
-
-                        filtered_cached_items.append(item)
                     new_items = filtered_cached_items
 
                     print(
@@ -2080,22 +1975,33 @@ center_title=True,
                     repr(e),
                 )
 
-        # 캐시가 비어 있으면 실시간 뉴스 수집
+        # 사용할 캐시가 없으면 뉴스 정보 확인
         if not new_items:
             try:
                 new_items = fetch_all_news() or []
+
                 print(
-                    "[뉴스] 실시간 뉴스 수집:",
+                    "[뉴스] 실시간 정보 확인:",
                     len(new_items),
                 )
+
             except Exception as e:
                 print(
-                    "[뉴스] 실시간 수집 실패:",
+                    "[뉴스] 정보 확인 실패:",
                     repr(e),
                 )
 
-        all_news_items.clear()
+        # 기존 SNS 검색 결과를 제거하고 공식 계정 링크 추가
+        new_items = [
+            item
+            for item in new_items
+            if item.get("category") != "SNS"
+        ]
 
+        new_items.extend(get_official_sns_links())
+
+        # 뉴스 목록 갱신
+        all_news_items.clear()
         all_news_items.extend(new_items)
 
         news_content.controls.clear()
@@ -2149,17 +2055,18 @@ center_title=True,
                         controls=[
                             ft.Text(
                                 t("no_news_title"),
-                                size=18,
+                                size=responsive_size(18),
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.Text(
                                 t("no_news_desc"),
-                                size=14,
+                                size=responsive_size(14),
                             ),
                         ],
                     ),
                 )
             )
+
         else:
             for item in filtered_items:
                 news_content.controls.append(
@@ -2217,82 +2124,8 @@ center_title=True,
 
     def refresh_home_sns():
         try:
-            sns_items = []
-
-            # 자동 수집기가 저장한 캐시에서 SNS만 가져오기
-            if cache_file.exists():
-                try:
-                    cache_data = json.loads(
-                        cache_file.read_text(
-                            encoding="utf-8"
-                        )
-                    )
-
-                    cached_items = cache_data.get(
-                        "items",
-                        []
-                    )
-
-                    if isinstance(cached_items, list):
-                        sns_items = [
-                            item
-                            for item in cached_items
-                            if item.get("category") == "SNS"
-                        ]
-
-                except (
-                    json.JSONDecodeError,
-                    OSError,
-                ) as e:
-                    print(
-                        "[홈 SNS 캐시] 불러오기 실패:",
-                        repr(e),
-                    )
-            
-            # 홈 화면을 열 때마다 최신 SNS 확인
-            try:
-                fetched_sns = fetch_sns_news() or []
-                merged_sns = {}
-
-                for item in sns_items:
-                    key = item.get("url") or item.get("title")
-                    if key:
-                        merged_sns[key] = item
-
-                for item in fetched_sns:
-                    key = item.get("url") or item.get("title")
-                    if key:
-                        merged_sns[key] = item
-
-                sns_items = list(merged_sns.values())
-
-                print(
-                    "[홈 SNS] 최신 수집:",
-                    len(fetched_sns),
-                    "최종 항목:",
-                    len(sns_items),
-                )
-
-            except Exception as e:
-                print(
-                    "[홈 SNS] 최신 수집 실패:",
-                    repr(e),
-                )
-                       
-            def sns_sort_key(item):
-                try:
-                    return parsedate_to_datetime(
-                        item.get("date", "")
-                    )
-                except Exception:
-                    return parsedate_to_datetime(
-                        "Thu, 01 Jan 1970 00:00:00 GMT"
-                    )
-
-            sns_items.sort(
-                key=sns_sort_key,
-                reverse=True,
-            )
+            # 공식 SNS 계정 링크 사용
+            sns_items = get_official_sns_links()
 
             home_sns_content.controls.clear()
 
@@ -2300,10 +2133,11 @@ center_title=True,
                 home_sns_content.controls.append(
                     ft.Text(
                         t("sns_empty"),
-                        size=14,
+                        size=responsive_size(14),
                         color="#666666",
                     )
                 )
+
             else:
                 for item in sns_items[:3]:
                     home_sns_content.controls.append(
@@ -2316,19 +2150,25 @@ center_title=True,
                                 spacing=10,
                                 controls=[
                                     ft.Container(
-                                        width=max(48, min(72, viewport_width() * 0.13)),
+                                        width=max(
+                                            48,
+                                            min(
+                                                72,
+                                                viewport_width() * 0.13,
+                                            ),
+                                        ),
                                         content=ft.Text(
                                             item.get(
                                                 "sub_category",
                                                 "SNS",
                                             ),
-                                            size=12,
+                                            size=responsive_size(12),
                                             weight=ft.FontWeight.BOLD,
                                         ),
                                     ),
                                     ft.Text(
                                         item["title"],
-                                        size=14,
+                                        size=responsive_size(14),
                                         expand=True,
                                         max_lines=2,
                                         overflow=ft.TextOverflow.ELLIPSIS,
@@ -2340,7 +2180,7 @@ center_title=True,
 
         except Exception as e:
             print(
-                "홈 SNS 뉴스 처리 실패:",
+                "홈 공식 SNS 표시 실패:",
                 repr(e),
             )
 
@@ -2348,7 +2188,7 @@ center_title=True,
             home_sns_content.controls.append(
                 ft.Text(
                     t("sns_error"),
-                    size=14,
+                    size=responsive_size(14),
                     color="#666666",
                 )
             )
