@@ -2037,37 +2037,6 @@ center_title=True,
         all_news_items.extend(new_items)
 
         news_content.controls.clear()
-
-        # 웹사이트의 SNS → X 탭에서 공식 타임라인 표시
-        if (
-            news_category == "SNS"
-            and news_sub_category == "X"
-            and fwv is not None
-            and os.name != "nt"
-        ):
-            news_content.controls.append(
-                ft.Text(
-                    "AGF Korea 공식 X 최신 게시물",
-                    size=responsive_size(14),
-                    color="#666666",
-                )
-            )
-
-            news_content.controls.append(
-                fwv.WebView(
-                    url="/assets/x_timeline.html",
-                    width=max(
-                        300,
-                        min(900, viewport_width() - 32),
-                    ),
-                    height=620,
-                )
-            )
-
-            page.update()
-            return
-
-        # 나머지 탭은 기존 뉴스 표시
         filtered_items = get_filtered_news()
         
         def news_sort_key(item):
