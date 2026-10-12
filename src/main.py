@@ -1198,56 +1198,55 @@ def main(page: ft.Page):
 
         if index == 0:
             page.appbar = ft.AppBar(
-                title=ft.Column(
-                    spacing=0,
-                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                    controls=[
-                        ft.Text(
-                            t("app_title"),
-                            size=21,
-                            weight=ft.FontWeight.BOLD,
-                            text_align=ft.TextAlign.CENTER,
-                        ),
-                        ft.Text(
-                            dday_text,
-                            size=17,
-                            weight=ft.FontWeight.BOLD,
-                            color="#666666",
-                            text_align=ft.TextAlign.CENTER,
-                        ),
-                    ],
-                ),
-                center_title=True,
-                bgcolor="#FFFFFF",
-                elevation=2,
-                toolbar_height=60 if is_mobile_layout() else 68,
-                actions=[
-                    build_language_button(),
-                    ft.IconButton(
-                        icon=ft.Icons.NOTIFICATIONS_OUTLINED,
-                        tooltip=t("notification"),
-                        on_click=notification_clicked,
-                    ),
-                    ft.IconButton(
-                        icon=ft.Icons.MENU,
-                        tooltip=t("menu"),
-                        on_click=menu_clicked,
-                    ),
-                ],
-            )
-        else:
-            page.appbar = ft.AppBar(
-                leading=ft.IconButton(
-                    icon=ft.Icons.ARROW_BACK,
-                    tooltip=t("home_back"),
-                    on_click=lambda e: change_page(index=0),
-                ),
-                title=ft.Text(
-                    titles[index],
+title=ft.Row(
+    alignment=ft.MainAxisAlignment.CENTER,
+    spacing=8 if is_mobile_layout() else 14,
+    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+    controls=[
+        ft.Column(
+            spacing=0,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Text(
+                    t("app_title"),
                     size=21,
                     weight=ft.FontWeight.BOLD,
+                    text_align=ft.TextAlign.CENTER,
                 ),
-                center_title=False,
+                ft.Text(
+                    dday_text,
+                    size=17,
+                    weight=ft.FontWeight.BOLD,
+                    color="#666666",
+                    text_align=ft.TextAlign.CENTER,
+                ),
+            ],
+        ),
+        ft.Container(
+            padding=ft.Padding(
+                left=8,
+                right=8,
+                top=5,
+                bottom=5,
+            ),
+            border_radius=8,
+            bgcolor="#FFF0CC",
+            alignment=ft.Alignment.CENTER,
+            content=ft.Text(
+                t("fanmade_short")
+                if is_mobile_layout()
+                else t("unofficial_notice"),
+                size=13 if is_mobile_layout() else 15,
+                weight=ft.FontWeight.BOLD,
+                color="#8A4B08",
+                text_align=ft.TextAlign.CENTER,
+                max_lines=2,
+            ),
+        ),
+    ],
+),
+center_title=True,
+
                 bgcolor="#FFFFFF",
                 elevation=2,
                 toolbar_height=60 if is_mobile_layout() else 68,
@@ -3042,7 +3041,7 @@ def main(page: ft.Page):
                         tooltip=t("stage"),
                         on_click=lambda e: change_page(index=2),
                     ),
-                    title=ft.Text(t("guest_card"), size=layout_home_card_title_size(), weight=ft.FontWeight.BOLD),
+                    title=ft.Text(t("guest_card"), size=layout_home_card_title_size(),    weight=ft.FontWeight.BOLD),
                     center_title=False,
                     bgcolor="#FFFFFF",
                     elevation=2,
