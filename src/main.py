@@ -39,24 +39,10 @@ map_file = (
 def fetch_sns_news():
     news_items = []
 
-rss_queries = [
-    (
-        "X",
-        "site:x.com/AGF_Korea when:30d",
-    ),
-    (
-        "Instagram",
-        "site:instagram.com/agf_korea AGF 2026",
-    ),
-]
-
-def fetch_sns_news():
-    news_items = []
-
     rss_queries = [
         (
             "X",
-            "site:x.com/AGF_Korea when:30d",
+            "site:x.com/AGF_Korea",
         ),
         (
             "Instagram",
@@ -78,10 +64,7 @@ def fetch_sns_news():
                 rss_url,
                 headers={
                     "User-Agent": "Mozilla/5.0",
-                    "Accept": (
-                        "application/rss+xml, "
-                        "application/xml, text/xml"
-                    ),
+                    "Accept": "application/rss+xml, application/xml, text/xml",
                 },
             )
 
@@ -95,25 +78,19 @@ def fetch_sns_news():
             count = 0
 
             for item in root.findall(".//item"):
-                title = item.findtext(
-                    "title",
-                    "",
-                ).strip()
-
-                link = item.findtext(
-                    "link",
-                    "",
-                ).strip()
-
-                pub_date = item.findtext(
-                    "pubDate",
-                    "",
-                ).strip()
+                title = item.findtext("title", "").strip()
+                link = item.findtext("link", "").strip()
+                pub_date = item.findtext("pubDate", "").strip()
 
                 if not title or not link:
                     continue
 
-                # X 게시물은 날짜가 확인되면 현재 연도만 표시
+                # X 답글/댓글성 게시물 제외
+                if sub_category == "X":
+                    lower_title = title.lower()
+
+                # X는 날짜가 확인되면 2026년 자료만 표시
+                # 날짜가 없는 자료는 일단 표시
                 if sub_category == "X" and pub_date:
                     try:
                         parsed_date = parsedate_to_datetime(
@@ -133,9 +110,7 @@ def fetch_sns_news():
                         "category": "SNS",
                         "sub_category": sub_category,
                         "date": pub_date,
-                        "source": (
-                            f"출처: AGF Korea {sub_category}"
-                        ),
+                        "source": f"출처: AGF Korea {sub_category}",
                     }
                 )
 
@@ -158,6 +133,7 @@ def fetch_sns_news():
     )
 
     return news_items
+
 
 def fetch_public_news():
     page_data = [
@@ -381,6 +357,24 @@ def main(page: ft.Page):
     def is_tablet_layout():
         return 600 <= viewport_width() < 900
 
+    def responsive_size(base, minimum=None):
+        """Scale text and explicitly-sized icons for the current viewport."""
+        width = viewport_width()
+        if width < 360:
+            scale = 0.90
+        elif width < 600:
+            scale = 0.94
+        elif width < 900:
+            scale = 1.00
+        elif width < 1200:
+            scale = 1.02
+        else:
+            scale = 1.04
+
+        if minimum is None:
+            minimum = 11 if base <= 15 else 13
+        return max(minimum, int(round(base * scale)))
+
     def layout_side_padding():
         width = viewport_width()
         if width < 380:
@@ -575,17 +569,17 @@ def main(page: ft.Page):
             "stage_title": "AGF 스테이지",
             "stage_desc_main": "스테이지와 날짜를 선택해 일정을 확인하세요.",
             "booth_title": "AGF 부스",
-            "booth_desc": "참가사 · 부스 · 배치도",
+            "booth_desc": "공식 참가사 및 부스 정보",
             "booth_intro": "공식 참가사와 부스 정보가 공개되면 이곳에서 확인할 수 있습니다.",
             "participant_search": "참가사 검색",
             "participant_info": "참가사 정보",
             "participant_empty": "공식 참가사 정보가 아직 공개되지 않았습니다.",
             "search_empty": "검색 결과가 없습니다.",
-            "booth_map": "부스 & 배치도",
-            "booth_map_desc": "부스 번호와 참가사를 확인할 수 있습니다.",
+            "booth_map": "부스 정보",
+            "booth_map_desc": "공식적으로 공개된 부스 번호와 참가사명을 확인할 수 있습니다.",
             "booth_list": "부스 목록",
             "booth_empty": "공식 참가사 및 부스 정보가 아직 공개되지 않았습니다.",
-            "booth_update": "※ 실제 배치도와 참가사 정보 공개 후 업데이트됩니다.",
+            "booth_update": "※ 공식적으로 공개된 사실정보만 텍스트로 안내합니다.",
             "booth_number": "부스 번호",
             "official_update_pending": "참가사 상세 정보는 공식 자료 공개 후 업데이트할 예정입니다.",
             "map_load_error": "배치도 이미지를 불러오지 못했습니다.",
@@ -717,18 +711,17 @@ def main(page: ft.Page):
             "stage_title": "AGF Stage",
             "stage_desc_main": "Select a stage and date to view the schedule.",
             "booth_title": "AGF Booth",
-            "booth_desc": "Participants · Booths · Floor Map",
+            "booth_desc": "Official Participant & Booth Information",
             "booth_intro": "Participant and booth information will be available here once officially released.",
             "participant_search": "Search participants",
             "participant_info": "Participant Information",
             "participant_empty": "Official participant information has not been released yet.",
             "search_empty": "No search results.",
-            "booth_map": "Booths & Floor Map",
-            "booth_map_desc": "Check booth numbers and participants.",
+            "booth_map": "Booth Information",
+            "booth_map_desc": "Only publicly announced booth numbers and participant names are shown here.",
             "booth_list": "Booth List",
             "booth_empty": "Official participant and booth information has not been released yet.",
-            "booth_update": "※ The actual floor map and participant information will be updated after official release.",
-            "booth_number": "Booth Number",
+            "booth_update": "※ Only publicly announced factual information is provided as text.",             	    		    "booth_number": "Booth Number",
             "official_update_pending": "Participant details will be updated after official information is released.",
             "map_load_error": "Failed to load the floor map.",
             "map_pending": "AGF 2026 Floor Map",
@@ -859,17 +852,17 @@ def main(page: ft.Page):
             "stage_title": "AGF ステージ",
             "stage_desc_main": "ステージと日付を選択してスケジュールを確認してください。",
             "booth_title": "AGF ブース",
-            "booth_desc": "参加者・ブース・会場マップ",
+            "booth_desc": "公式参加者・ブース情報",
             "booth_intro": "公式参加者とブース情報が公開されると、こちらで確認できます。",
             "participant_search": "参加者を検索",
             "participant_info": "参加者情報",
             "participant_empty": "公式参加者情報はまだ公開されていません。",
             "search_empty": "検索結果はありません。",
-            "booth_map": "ブース＆会場マップ",
-            "booth_map_desc": "ブース番号と参加者を確認できます。",
+            "booth_map": "ブース情報",
+            "booth_map_desc": "公式に公開されたブース番号と参加者名を確認できます。",
             "booth_list": "ブース一覧",
             "booth_empty": "公式参加者およびブース情報はまだ公開されていません。",
-            "booth_update": "※ 実際の会場マップと参加者情報は公式公開後に更新します。",
+            "booth_update": "※ 公式に公開された事実情報のみをテキストで案内します。",
             "booth_number": "ブース番号",
             "official_update_pending": "参加者の詳細情報は公式資料公開後に更新します。",
             "map_load_error": "会場マップを読み込めませんでした。",
@@ -972,11 +965,12 @@ def main(page: ft.Page):
         )
 
         dialog = ft.AlertDialog(
-            title=ft.Text(t("notification_alert")),
+            title=ft.Text(t("notification_alert"), size=responsive_size(18)),
             content=ft.Text(
                 status
                 + "\n\n"
-                + t("notification_desc")
+                + t("notification_desc"),
+                size=layout_body_size(),
             ),
             actions=[
                 ft.TextButton(
@@ -1144,7 +1138,7 @@ def main(page: ft.Page):
             on_click=language_button_clicked,
             content=ft.Text(
                 get_language_code(),
-                size=14,
+                size=responsive_size(14),
                 weight=ft.FontWeight.BOLD,
                 text_align=ft.TextAlign.CENTER,
             ),
@@ -1158,6 +1152,7 @@ def main(page: ft.Page):
         dialog = ft.AlertDialog(
             title=ft.Text(
                 t("language"),
+                size=layout_body_size() + 2,
                 weight=ft.FontWeight.BOLD,
             ),
             content=ft.Column(
@@ -1204,13 +1199,13 @@ def main(page: ft.Page):
                     controls=[
                         ft.Text(
                             t("app_title"),
-                            size=21,
+                            size=responsive_size(21),
                             weight=ft.FontWeight.BOLD,
                             text_align=ft.TextAlign.CENTER,
                         ),
                         ft.Text(
                             dday_text,
-                            size=17,
+                            size=responsive_size(17),
                             weight=ft.FontWeight.BOLD,
                             color="#666666",
                             text_align=ft.TextAlign.CENTER,
@@ -1244,7 +1239,7 @@ def main(page: ft.Page):
                 ),
                 title=ft.Text(
                     titles[index],
-                    size=21,
+                    size=responsive_size(21),
                     weight=ft.FontWeight.BOLD,
                 ),
                 center_title=False,
@@ -1275,11 +1270,12 @@ def main(page: ft.Page):
         dialog = ft.AlertDialog(
             title=ft.Text(
                 title,
+                size=layout_home_card_title_size() - 1,
                 weight=ft.FontWeight.BOLD,
             ),
             content=ft.Text(
                 message,
-                size=15,
+                size=responsive_size(15),
             ),
             actions=[
                 ft.TextButton(
@@ -1424,6 +1420,7 @@ def main(page: ft.Page):
         dialog = ft.AlertDialog(
             title=ft.Text(
                 t("venue_info"),
+                size=layout_home_card_title_size() - 1,
                 weight=ft.FontWeight.BOLD,
             ),
             content=ft.Column(
@@ -1437,12 +1434,12 @@ def main(page: ft.Page):
                         controls=[
                             ft.Text(
                                 "KINTEX 제1전시장",
-                                size=17,
+                                size=responsive_size(17),
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.Text(
                                 "경기도 고양시 일산서구 킨텍스로 217-60",
-                                size=13,
+                                size=responsive_size(13),
                                 color="#666666",
                             ),
                         ],
@@ -1470,15 +1467,6 @@ def main(page: ft.Page):
             "AGF 2026\n\n"
             + t("event_name"),
         )
-
-    async def official_homepage_clicked(e):
-        await page.close_end_drawer()
-
-    async def official_x_clicked(e):
-        await page.close_end_drawer()
-
-    async def official_instagram_clicked(e):
-        await page.close_end_drawer()
 
     async def app_settings_clicked(e):
         await page.close_end_drawer()
@@ -1522,7 +1510,7 @@ def main(page: ft.Page):
                     ),
                     content=ft.Text(
                         t("event_guide"),
-                        size=13,
+                        size=responsive_size(13),
                         color="#777777",
                         weight=ft.FontWeight.BOLD,
                     ),
@@ -1530,103 +1518,62 @@ def main(page: ft.Page):
                 ft.ListTile(
                     leading=ft.Icon(
                         ft.Icons.CALENDAR_MONTH_OUTLINED,
+                        size=responsive_size(20),
                     ),
                     title=ft.Text(
                         t("drawer_event_schedule"),
+                        size=layout_body_size() + 1,
                     ),
                     trailing=ft.Icon(
                         ft.Icons.CHEVRON_RIGHT,
+                        size=responsive_size(16),
                     ),
                     on_click=schedule_clicked,
                 ),
                 ft.ListTile(
                     leading=ft.Icon(
                         ft.Icons.LOCATION_ON_OUTLINED,
+                        size=responsive_size(20),
                     ),
                     title=ft.Text(
                         t("drawer_venue"),
+                        size=layout_body_size() + 1,
                     ),
                     trailing=ft.Icon(
                         ft.Icons.CHEVRON_RIGHT,
+                        size=responsive_size(16),
                     ),
                     on_click=venue_clicked,
                 ),
                 ft.ListTile(
                     leading=ft.Icon(
                         ft.Icons.INFO_OUTLINED,
+                        size=responsive_size(20),
                     ),
                     title=ft.Text(
                         t("drawer_event_info"),
+                        size=layout_body_size() + 1,
                     ),
                     trailing=ft.Icon(
                         ft.Icons.CHEVRON_RIGHT,
+                        size=responsive_size(16),
                     ),
                     on_click=event_info_clicked,
                 ),
                 ft.Divider(),
-                ft.Container(
-                    padding=ft.Padding(
-                        left=layout_card_padding() + 2,
-                        top=max(6, layout_card_padding() - 6),
-                        right=layout_card_padding(),
-                        bottom=4,
-                    ),
-                    content=ft.Text(
-                        t("drawer_official_channel"),
-                        size=13,
-                        color="#777777",
-                        weight=ft.FontWeight.BOLD,
-                    ),
-                ),
-                ft.ListTile(
-                    leading=ft.Icon(
-                        ft.Icons.LANGUAGE,
-                    ),
-                    title=ft.Text(
-                        t("official_homepage"),
-                    ),
-                    url="https://www.agfkorea.com/",
-                    trailing=ft.Icon(
-                        ft.Icons.OPEN_IN_NEW,
-                    ),
-                    on_click=official_homepage_clicked,
-                ),
-                ft.ListTile(
-                    leading=ft.Icon(
-                        ft.Icons.ALTERNATE_EMAIL,
-                    ),
-                    title=ft.Text(
-                        t("official_x"),
-                    ),
-                    url="https://x.com/AGF_Korea",
-                    trailing=ft.Icon(
-                        ft.Icons.OPEN_IN_NEW,
-                    ),
-                    on_click=official_x_clicked,
-                ),
-                ft.ListTile(
-                    leading=ft.Icon(
-                        ft.Icons.PHOTO_CAMERA_OUTLINED,
-                    ),
-                    title=ft.Text(
-                        t("official_instagram"),
-                    ),
-                    url="https://www.instagram.com/agf_korea/",
-                    trailing=ft.Icon(
-                        ft.Icons.OPEN_IN_NEW,
-                    ),
-                    on_click=official_instagram_clicked,
-                ),
                 ft.ListTile(
                     leading=ft.Icon(
                         ft.Icons.HELP_OUTLINE,
+                        size=responsive_size(20),
                     ),
                     title=ft.Text(
                         t("beta_contact"),
+                        size=layout_body_size() + 1,
                     ),
                     url="https://naver.me/G6RXO3S9",
                     trailing=ft.Icon(
                         ft.Icons.OPEN_IN_NEW,
+                        size=responsive_size(16),
                     ),
                 ),
             ],
@@ -1693,6 +1640,7 @@ def main(page: ft.Page):
                     content=ft.ListTile(
                         leading=ft.Icon(
                             ft.Icons.NOTIFICATIONS_OUTLINED,
+                            size=responsive_size(20),
                         ),
                         title=ft.Text(
                             t("auto_news"),
@@ -1742,7 +1690,7 @@ def main(page: ft.Page):
                             ft.Row(
                                 spacing=12,
                                 controls=[
-                                    ft.Icon(ft.Icons.LANGUAGE),
+                                    ft.Icon(ft.Icons.LANGUAGE, size=responsive_size(20)),
                                     ft.Column(
                                         spacing=2,
                                         controls=[
@@ -1807,7 +1755,7 @@ def main(page: ft.Page):
                         spacing=0,
                         controls=[
                             ft.ListTile(
-                                leading=ft.Icon(ft.Icons.EVENT_OUTLINED),
+                                leading=ft.Icon(ft.Icons.EVENT_OUTLINED, size=responsive_size(20)),
                                 title=ft.Text(
                                     t("app_title"),
                                     size=layout_body_size() + 2,
@@ -1819,7 +1767,7 @@ def main(page: ft.Page):
                             ),
                             ft.Divider(height=1),
                             ft.ListTile(
-                                leading=ft.Icon(ft.Icons.INFO_OUTLINED),
+                                leading=ft.Icon(ft.Icons.INFO_OUTLINED, size=responsive_size(20)),
                                 title=ft.Text(
                                     t("version"),
                                     size=layout_body_size() + 2,
@@ -1831,7 +1779,7 @@ def main(page: ft.Page):
                                 ),
                             ),
                             ft.ListTile(
-                                leading=ft.Icon(ft.Icons.INFO_OUTLINE),
+                                leading=ft.Icon(ft.Icons.INFO_OUTLINE, size=responsive_size(20)),
                                 title=ft.Text(
                                     t("unofficial_notice"),
                                     size=layout_body_size() + 2,
@@ -1843,7 +1791,7 @@ def main(page: ft.Page):
                             ),
                             ft.Divider(height=1),
                             ft.ListTile(
-                                leading=ft.Icon(ft.Icons.HELP_OUTLINE),
+                                leading=ft.Icon(ft.Icons.HELP_OUTLINE, size=responsive_size(20)),
                                 title=ft.Text(
                                     t("beta_contact"),
                                     size=layout_body_size() + 2,
@@ -1852,7 +1800,7 @@ def main(page: ft.Page):
                                     t("beta_contact_desc"),
                                     size=layout_small_size(),
                                 ),
-                                trailing=ft.Icon(ft.Icons.OPEN_IN_NEW),
+                                trailing=ft.Icon(ft.Icons.OPEN_IN_NEW, size=responsive_size(16)),
                                 url="https://naver.me/G6RXO3S9",
                             ),
                         ],
@@ -1933,17 +1881,17 @@ def main(page: ft.Page):
                 controls=[
                     ft.Text(
                         format_news_date(item.get("date", "")),
-                        size=14,
+                        size=responsive_size(14),
                         color="#777777",
                     ),
                     ft.Text(
                         "·",
-                        size=12,
+                        size=responsive_size(12),
                         color="#AAAAAA",
                     ),
                     ft.Text(
                         get_news_source_text(item),
-                        size=13,
+                        size=responsive_size(13),
                         color="#777777",
                     ),
                 ],
@@ -1956,7 +1904,7 @@ def main(page: ft.Page):
             controls.append(
                 ft.Text(
                     description_text,
-                    size=14,
+                    size=responsive_size(14),
                     color="#666666",
                 )
             )
@@ -2150,12 +2098,12 @@ def main(page: ft.Page):
                         controls=[
                             ft.Text(
                                 t("no_news_title"),
-                                size=18,
+                                size=responsive_size(18),
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.Text(
                                 t("no_news_desc"),
-                                size=14,
+                                size=responsive_size(14),
                             ),
                         ],
                     ),
@@ -2210,7 +2158,7 @@ def main(page: ft.Page):
         controls=[
             ft.Text(
                 t("sns_loading"),
-                size=14,
+                size=responsive_size(14),
                 color="#666666",
             )
         ],
@@ -2301,7 +2249,7 @@ def main(page: ft.Page):
                 home_sns_content.controls.append(
                     ft.Text(
                         t("sns_empty"),
-                        size=14,
+                        size=responsive_size(14),
                         color="#666666",
                     )
                 )
@@ -2323,13 +2271,13 @@ def main(page: ft.Page):
                                                 "sub_category",
                                                 "SNS",
                                             ),
-                                            size=12,
+                                            size=responsive_size(12),
                                             weight=ft.FontWeight.BOLD,
                                         ),
                                     ),
                                     ft.Text(
                                         item["title"],
-                                        size=14,
+                                        size=responsive_size(14),
                                         expand=True,
                                         max_lines=2,
                                         overflow=ft.TextOverflow.ELLIPSIS,
@@ -2349,7 +2297,7 @@ def main(page: ft.Page):
             home_sns_content.controls.append(
                 ft.Text(
                     t("sns_error"),
-                    size=14,
+                    size=responsive_size(14),
                     color="#666666",
                 )
             )
@@ -2408,19 +2356,19 @@ def main(page: ft.Page):
                         expand=True,
                         spacing=12,
                         controls=[
-                            ft.Text("🎟️", size=28),
+                            ft.Text("🎟️", size=responsive_size(28)),
                             ft.Column(
                                 expand=True,
                                 spacing=3,
                                 controls=[
                                     ft.Text(
                                         t("ticket_desc"),
-                                        size=13,
+                                        size=responsive_size(13),
                                         color="#666666",
                                     ),
-                                    ft.Text(t("ticket_earlybird"), size=12, color="#555555"),
-                                    ft.Text(t("ticket_fast"), size=12, color="#555555"),
-                                    ft.Text(t("ticket_general"), size=12, color="#555555"),
+                                    ft.Text(t("ticket_earlybird"), size=responsive_size(12), color="#555555"),
+                                    ft.Text(t("ticket_fast"), size=responsive_size(12), color="#555555"),
+                                    ft.Text(t("ticket_general"), size=responsive_size(12), color="#555555"),
                                 ],
                             ),
                         ],
@@ -2431,10 +2379,10 @@ def main(page: ft.Page):
                         controls=[
                             ft.Text(
                                 t("ticket"),
-                                size=18,
+                                size=responsive_size(18),
                                 weight=ft.FontWeight.BOLD,
                             ),
-                            ft.Icon(ft.Icons.ARROW_FORWARD, size=20),
+                            ft.Icon(ft.Icons.ARROW_FORWARD, size=responsive_size(20)),
                         ],
                     ),
                 ],
@@ -2678,7 +2626,7 @@ def main(page: ft.Page):
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
                             label_text_style=ft.TextStyle(
-                                size=15,
+                                size=responsive_size(15),
                                 weight=ft.FontWeight.BOLD,
                             ),
                             label_padding=ft.Padding(
@@ -2721,7 +2669,7 @@ def main(page: ft.Page):
                             tab_alignment=ft.TabAlignment.START,
                             indicator_thickness=2,
                             label_text_style=ft.TextStyle(
-                                size=15,
+                                size=responsive_size(15),
                                 weight=ft.FontWeight.BOLD,
                             ),
                             label_padding=ft.Padding(
@@ -2753,12 +2701,12 @@ def main(page: ft.Page):
                             controls=[
                                 ft.Text(
                                     t("no_news_title"),
-                                    size=18,
+                                    size=responsive_size(18),
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 ft.Text(
                                     t("no_news_desc"),
-                                    size=14,
+                                    size=responsive_size(14),
                                 ),
                             ],
                         ),
@@ -2796,7 +2744,7 @@ def main(page: ft.Page):
                 controls=[
                     ft.Text(
                         t("loading_notice"),
-                        size=14,
+                        size=responsive_size(14),
                     )
                 ],
             )
@@ -3073,7 +3021,7 @@ def main(page: ft.Page):
                                                 spacing=3,
                                                 controls=[
                                                     ft.Text(schedule["time"], size=layout_body_size(), weight=ft.FontWeight.BOLD),
-                                                    ft.Text(schedule["title"], size=14),
+                                                    ft.Text(schedule["title"], size=responsive_size(14)),
                                                 ],
                                             ),
                                         ),
@@ -3120,15 +3068,15 @@ def main(page: ft.Page):
 
             def show_stage_detail(date_name, stage_name, item):
                 dialog = ft.AlertDialog(
-                    title=ft.Text(item.get("title") or t("stage"), weight=ft.FontWeight.BOLD),
+                    title=ft.Text(item.get("title") or t("stage"), size=layout_home_card_title_size() - 1, weight=ft.FontWeight.BOLD),
                     content=ft.Column(
                         tight=True,
                         spacing=10,
                         controls=[
-                            ft.Text(f"📅 {get_stage_date_label(date_name)}"),
-                            ft.Text(f"🎤 {stage_name} STAGE"),
-                            ft.Text(f"🕒 {t('time_label')}: {item.get('time', '')}"),
-                            ft.Text(f"👤 {t('guest_label')}: {item.get('guest', '') or '-'}"),
+                            ft.Text(f"📅 {get_stage_date_label(date_name)}", size=layout_body_size()),
+                            ft.Text(f"🎤 {stage_name} STAGE", size=layout_body_size()),
+                            ft.Text(f"🕒 {t('time_label')}: {item.get('time', '')}", size=layout_body_size()),
+                            ft.Text(f"👤 {t('guest_label')}: {item.get('guest', '') or '-'}", size=layout_body_size()),
                         ],
                     ),
                     actions=[
@@ -3172,7 +3120,7 @@ def main(page: ft.Page):
                     color="#666666",
                 )
                 dialog = ft.AlertDialog(
-                    title=ft.Text(t("admin_edit"), weight=ft.FontWeight.BOLD),
+                    title=ft.Text(t("admin_edit"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
                     content=ft.Column(
                         tight=True,
                         spacing=10,
@@ -3204,8 +3152,8 @@ def main(page: ft.Page):
                 admin_width = 42 if admin_authenticated else 0
                 time_width = min(110.0, max(64.0, available_width * 0.16))
                 guest_width = min(190.0, max(92.0, available_width * 0.25))
-                table_text_size = 12 if viewport_width() < 500 else 13 if viewport_width() < 800 else 14
-                guest_text_size = 11 if viewport_width() < 500 else 12 if viewport_width() < 800 else 13
+                table_text_size = max(11, layout_body_size() - 1)
+                guest_text_size = max(11, table_text_size - 1)
                 header = ft.Container(
                     bgcolor="#F5F5F5",
                     padding=ft.Padding(left=10, right=10, top=10, bottom=10),
@@ -3218,7 +3166,7 @@ def main(page: ft.Page):
                             ),
                             ft.Container(
                                 expand=True,
-                                content=ft.Text("STAGE", weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
+                                content=ft.Text("STAGE", size=table_text_size, weight=ft.FontWeight.BOLD, text_align=ft.TextAlign.CENTER),
                             ),
                             ft.Container(
                                 width=guest_width,
@@ -3410,8 +3358,8 @@ def main(page: ft.Page):
                 if not stage_admin_password:
                     page.show_dialog(
                         ft.AlertDialog(
-                            title=ft.Text(t("admin"), weight=ft.FontWeight.BOLD),
-                            content=ft.Text(t("admin_password_missing")),
+                            title=ft.Text(t("admin"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
+                            content=ft.Text(t("admin_password_missing"), size=layout_body_size()),
                             actions=[ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog())],
                         )
                     )
@@ -3436,7 +3384,7 @@ def main(page: ft.Page):
 
                 page.show_dialog(
                     ft.AlertDialog(
-                        title=ft.Text(t("admin"), weight=ft.FontWeight.BOLD),
+                        title=ft.Text(t("admin"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
                         content=password_field,
                         actions=[
                             ft.TextButton(t("close"), on_click=lambda e: page.pop_dialog()),
@@ -3500,11 +3448,13 @@ def main(page: ft.Page):
                 dialog = ft.AlertDialog(
                     title=ft.Text(
                         item["name"],
+                        size=layout_home_card_title_size() - 1,
                         weight=ft.FontWeight.BOLD,
                     ),
                     content=ft.Text(
                         f"{t('booth_number_label')}: {item['booth']}\n\n"
-                        + t("official_update_pending")
+                        + t("official_update_pending"),
+                        size=layout_body_size(),
                     ),
                     actions=[
                         ft.TextButton(
@@ -3597,6 +3547,7 @@ def main(page: ft.Page):
                 dialog = ft.AlertDialog(
                     title=ft.Text(
                         f"{t('booth_prefix')} {item['booth']}",
+                        size=layout_home_card_title_size() - 1,
                         weight=ft.FontWeight.BOLD,
                     ),
                     content=ft.Column(
@@ -3670,68 +3621,125 @@ def main(page: ft.Page):
                     )
 
             def build_booth_layout():
-                # 화면 폭을 기준으로 배치도 영역도 함께 조절
-                map_height = max(220, min(620, viewport_width() * 0.62))
+                # 임시 안내 영역: 공식 배치도 이미지 대신 공개된 사실정보만 텍스트로 안내
+                panel_height = max(
+                    220,
+                    min(280, viewport_width() * 0.7),
+                )
 
-                if map_file.exists():
-                    return ft.Container(
-                        width=float("inf"),
-                        height=map_height,
-                        alignment=ft.Alignment.CENTER,
-                        border_radius=12,
-                        bgcolor="#FFFFFF",
-                        content=ft.Image(
-                            src=map_file.read_bytes(),
-                            width=float("inf"),
-                            height=float("inf"),
-                            fit=ft.BoxFit.CONTAIN,
-                            error_content=ft.Column(
-                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                alignment=ft.MainAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Icon(
-                                        ft.Icons.MAP_OUTLINED,
-                                        size=max(38, min(50, viewport_width() * 0.11)),
-                                    ),
-                                    ft.Text(
-                                        "배치도 이미지를 불러오지 못했습니다.",
-                                        size=15,
-                                    ),
-                                ],
+                return ft.Container(
+                    width=float("inf"),
+                    height=panel_height,
+                    alignment=ft.Alignment.CENTER,
+                    border_radius=12,
+                    bgcolor="#FFFFFF",
+                    padding=12,
+                    content=ft.Column(
+                        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                        alignment=ft.MainAxisAlignment.CENTER,
+                        spacing=8,
+                        controls=[
+                            ft.Icon(
+                                ft.Icons.LIST_ALT,
+                                size=responsive_size(36),
+                                color="#555555",
                             ),
-                        ),
-                    )
-                else:
-                    return ft.Container(
-                        width=float("inf"),
-                        height=map_height,
-                        alignment=ft.Alignment.CENTER,
-                        border_radius=12,
-                        bgcolor="#FFFFFF",
-                        content=ft.Column(
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=8,
-                            controls=[
-                                ft.Icon(
-                                    ft.Icons.MAP_OUTLINED,
-                                    size=max(42, min(55, viewport_width() * 0.12)),
-                                ),
-                                ft.Text(
-                                    "AGF 2026 부스 배치도",
-                                    size=layout_home_card_title_size() - 1,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    "실제 배치도 공개 후 업데이트 예정",
-                                    size=layout_small_size(),
-                                    color="#666666",
-                                ),
-                            ],
-                        ),
-                    )
+                            ft.Text(
+                                t("booth_map"),
+                                size=layout_home_card_title_size() - 1,
+                                weight=ft.FontWeight.BOLD,
+                                text_align=ft.TextAlign.CENTER,
+                            ),
+                            ft.Text(
+                                "공식 배치도 이미지는 사용하지 않습니다.",
+                                size=layout_small_size(),
+                                color="#666666",
+                                text_align=ft.TextAlign.CENTER,
+                            ),
+                            ft.Text(
+                                "공개된 부스 번호와 참가사명은 텍스트로 안내할 예정입니다.",
+                                size=layout_small_size(),
+                                color="#666666",
+                                text_align=ft.TextAlign.CENTER,
+                            ),
+                        ],
+                    ),
+                )
 
             map_view = build_booth_layout()
+
+            booth_intro_card = ft.Container(
+                padding=layout_card_padding(),
+                border_radius=15,
+                bgcolor="#F5F5F5",
+                content=ft.Column(
+                    spacing=8,
+                    controls=[
+                        ft.Text(
+                            t("booth_desc"),
+                            size=responsive_size(20),
+                            weight=ft.FontWeight.BOLD,
+                        ),
+                        ft.Text(
+                            t("booth_intro"),
+                            size=layout_body_size(),
+                        ),
+                    ],
+                ),
+            )
+
+            official_channels_card = ft.Container(
+                padding=max(6, layout_card_padding() - 2),
+                border_radius=15,
+                bgcolor="#F5F5F5",
+                content=ft.Column(
+                    spacing=0,
+                    controls=[
+                        ft.Container(
+                            padding=ft.Padding(left=8, top=4, right=8, bottom=4),
+                            content=ft.Text(
+                                t("official_channel"),
+                                size=layout_home_card_title_size() - 1,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                        ),
+                        ft.ListTile(
+                            dense=True,
+                            content_padding=ft.Padding(left=8, top=2, right=8, bottom=2),
+                            horizontal_spacing=8,
+                            leading=ft.Icon(ft.Icons.LANGUAGE, size=responsive_size(20)),
+                            title=ft.Text(t("official_homepage"), size=layout_body_size()),
+                            trailing=ft.Icon(ft.Icons.OPEN_IN_NEW, size=responsive_size(16)),
+                            url="https://www.agfkorea.com/",
+                        ),
+                        ft.ListTile(
+                            dense=True,
+                            content_padding=ft.Padding(left=8, top=2, right=8, bottom=2),
+                            horizontal_spacing=8,
+                            leading=ft.Icon(ft.Icons.ALTERNATE_EMAIL, size=responsive_size(20)),
+                            title=ft.Text(t("official_x"), size=layout_body_size()),
+                            trailing=ft.Icon(ft.Icons.OPEN_IN_NEW, size=responsive_size(16)),
+                            url="https://x.com/AGF_Korea",
+                        ),
+                        ft.ListTile(
+                            dense=True,
+                            content_padding=ft.Padding(left=8, top=2, right=8, bottom=2),
+                            horizontal_spacing=8,
+                            leading=ft.Icon(ft.Icons.PHOTO_CAMERA_OUTLINED, size=responsive_size(20)),
+                            title=ft.Text(t("official_instagram"), size=layout_body_size()),
+                            trailing=ft.Icon(ft.Icons.OPEN_IN_NEW, size=responsive_size(16)),
+                            url="https://www.instagram.com/agf_korea/",
+                        ),
+                    ],
+                ),
+            )
+
+            booth_header_content = ft.Column(
+                spacing=max(8, layout_card_padding() - 4),
+                horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
+                controls=[booth_intro_card, official_channels_card],
+            )
+
 
             content_area.content = ft.Column(
                 expand=True,
@@ -3752,23 +3760,7 @@ def main(page: ft.Page):
                             top=0,
                             bottom=max(8, layout_card_padding() - 2),
                         ),
-                        padding=layout_card_padding(),
-                        border_radius=15,
-                        bgcolor="#F5F5F5",
-                        content=ft.Column(
-                            spacing=8,
-                            controls=[
-                                ft.Text(
-                                    t("booth_desc"),
-                                    size=18 if is_mobile_layout() else 20,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    t("booth_intro"),
-                                    size=layout_body_size(),
-                                ),
-                            ],
-                        ),
+                        content=booth_header_content,
                     ),
                     ft.Container(
                         expand=True,
@@ -3843,7 +3835,7 @@ def main(page: ft.Page):
                                                             booth_list,
                                                             ft.Text(
                                                                 t("booth_update"),
-                                                                size=12,
+                                                                size=responsive_size(12),
                                                                 color="#666666",
                                                             ),
                                                         ],
@@ -3935,8 +3927,8 @@ def main(page: ft.Page):
             page.pop_dialog()
 
         dialog = ft.AlertDialog(
-            title=ft.Text(t("site_notice_title"), weight=ft.FontWeight.BOLD),
-            content=ft.Text(t("site_notice_message"), size=15),
+            title=ft.Text(t("site_notice_title"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
+            content=ft.Text(t("site_notice_message"), size=layout_body_size()),
             actions=[ft.TextButton(t("confirm"), on_click=close_notice)],
         )
         page.show_dialog(dialog)
@@ -3950,8 +3942,8 @@ def main(page: ft.Page):
             show_site_notice_if_needed()
 
         dialog = ft.AlertDialog(
-            title=ft.Text(t("beta_dialog_title"), weight=ft.FontWeight.BOLD),
-            content=ft.Text(t("beta_dialog_message"), size=15),
+            title=ft.Text(t("beta_dialog_title"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
+            content=ft.Text(t("beta_dialog_message"), size=layout_body_size()),
             actions=[ft.TextButton(t("close"), on_click=close_beta)],
         )
         page.show_dialog(dialog)
