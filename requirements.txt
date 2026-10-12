@@ -1,2 +1,3 @@
 flet==1.0.0
 uvicorn
+flet-webview==1.0.0
