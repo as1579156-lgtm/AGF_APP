@@ -1924,6 +1924,8 @@ center_title=True,
         new_items = []
 
         # 기존 뉴스 캐시 사용
+        new_items = []
+        
         if cache_file.exists():
             try:
                 cache_data = json.loads(
