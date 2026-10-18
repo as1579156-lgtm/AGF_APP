@@ -2071,21 +2071,6 @@ center_title=True,
                 news_content.controls.append(
                     build_news_card(item)
                 )
-        # SNS의 X 탭에 공식 타임라인 표시
-        if (
-            news_category == "SNS"
-            and news_sub_category == "X"
-        ):
-            news_content.controls.append(
-                ft.Container(
-                    height=650,
-                    padding=8,
-                    content=fwv.WebView(
-                        url="https://agf-app.onrender.com/assets/x_timeline.html",
-                        height=630,
-                    ),
-                )
-            )
 
         page.update()
 
