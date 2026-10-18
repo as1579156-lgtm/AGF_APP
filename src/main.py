@@ -1,8 +1,5 @@
 import flet as ft
-try:
-    import flet_webview as fwv
-except ImportError:
-    fwv = None
+import flet_webview as fwv
 import json
 from pathlib import Path
 import urllib.request
@@ -408,7 +405,7 @@ def main(page: ft.Page):
             "version": "버전",
             "beta_contact": "테스트버전 문의",
             "beta_contact_desc": "베타 테스트 중 오류나 의견을 알려주세요.",
-            "unofficial_notice": "비공식 팬메이드 웹사이트",
+            "unofficial_notice": "비공식 팬메이드",
             "unofficial_notice_desc": "본 앱은 AGF 2026 조직위원회 및 AGF Korea와 공식적인 제휴·운영 관계가 없습니다.",
             "agf_news": "AGF 뉴스",
             "refresh": "새로고침",
@@ -439,7 +436,7 @@ def main(page: ft.Page):
             "ticket_general": "일반 티켓: 11월 12일(목) ~",
             "sponsor": "메인 스폰서 & 스폰서",
             "sponsor_desc": "AGF 2026의 메인 스폰서와 참가 스폰서를 확인하세요.",
-            "sponsor_empty": "스폰서 정보 공개 후 업데이트 예정",
+            "sponsor_empty": "메인 스폰서\n엔씨(NC)\n\n스폰서\n갤럭시 스토어 · SOOP · 엘리멘타 · 메가박스 · 컬쳐랜드",
             "guest_card": "게스트",
             "guest_desc": "AGF 2026 공식 게스트 정보를 확인하세요.",
             "guest_empty": "게스트 정보 공개 후 업데이트 예정",
@@ -581,7 +578,7 @@ def main(page: ft.Page):
             "ticket_general": "General Tickets: Nov 12 (Thu) ~",
             "sponsor": "Main Sponsors & Sponsors",
             "sponsor_desc": "Check the main sponsors and participating sponsors of AGF 2026.",
-            "sponsor_empty": "To be updated after sponsor information is released",
+            "sponsor_empty": "Main Sponsor\nNC\n\nSponsors\nGalaxy Store · SOOP · Elimenta · Megabox · Cultureland",
             "guest_card": "Guests",
             "guest_desc": "Check the official AGF 2026 guest information.",
             "guest_empty": "To be updated after guest information is released",
@@ -723,7 +720,7 @@ def main(page: ft.Page):
             "ticket_general": "一般チケット: 11月12日(木) ～",
             "sponsor": "メインスポンサー＆スポンサー",
             "sponsor_desc": "AGF 2026のメインスポンサーと参加スポンサーを確認してください。",
-            "sponsor_empty": "スポンサー情報公開後に更新予定",
+            "sponsor_empty": "メインスポンサー\nNC\n\nスポンサー\nGalaxy Store・SOOP・Elimenta・Megabox・Cultureland",
             "guest_card": "ゲスト",
             "guest_desc": "AGF 2026公式ゲスト情報を確認してください。",
             "guest_empty": "ゲスト情報公開後に更新予定",
@@ -1924,40 +1921,8 @@ center_title=True,
         if news_content is None:
             return
 
-        news_content.controls.clear()
+        new_items = []
 
-        # X 타임라인 표시 조건
-        if (
-            news_category == "SNS"
-            and news_sub_category == "X"
-            and fwv is not None
-            and os.name != "nt"
-        ):
-            news_content.controls.append(
-                ft.Text(
-                    "AGF Korea 공식 X 최신 게시물",
-                    size=responsive_size(14),
-                    color="#666666",
-                )
-            )
-
-            news_content.controls.append(
-                fwv.WebView(
-                    url="/assets/x_timeline.html",
-                    width=max(
-                        300,
-                        min(900, viewport_width() - 32),
-                    ),
-                    height=620,
-                )
-            )
-
-            page.update()
-            return
-
-        # 나머지 탭은 기존 뉴스 표시
-        filtered_items = get_filtered_news()
-        
         # 기존 뉴스 캐시 사용
         if cache_file.exists():
             try:
@@ -2038,7 +2003,7 @@ center_title=True,
 
         news_content.controls.clear()
         filtered_items = get_filtered_news()
-        
+
         def news_sort_key(item):
             news_date = str(
                 item.get("date", "")
@@ -2104,6 +2069,21 @@ center_title=True,
                 news_content.controls.append(
                     build_news_card(item)
                 )
+        # SNS의 X 탭에 공식 타임라인 표시
+        if (
+            news_category == "SNS"
+            and news_sub_category == "X"
+        ):
+            news_content.controls.append(
+                ft.Container(
+                    height=650,
+                    padding=8,
+                    content=fwv.WebView(
+                        url="https://agf-app.onrender.com/assets/x_timeline.html",
+                        height=630,
+                    ),
+                )
+            )
 
         page.update()
 
@@ -2289,9 +2269,24 @@ center_title=True,
                                         size=13,
                                         color="#666666",
                                     ),
-                                    ft.Text(t("ticket_earlybird"), size=12, color="#555555"),
-                                    ft.Text(t("ticket_fast"), size=12, color="#555555"),
-                                    ft.Text(t("ticket_general"), size=12, color="#555555"),
+                                    ft.Text(
+                                        t("ticket_earlybird"),
+                                        size=16,
+                                        weight=ft.FontWeight.BOLD,
+                                        color="#555555",
+                                    ),
+                                    ft.Text(
+                                        t("ticket_fast"),
+                                        size=16,
+                                        weight=ft.FontWeight.BOLD,
+                                        color="#555555",
+                                    ),
+                                    ft.Text(
+                                        t("ticket_general"),
+                                        size=16,
+                                        weight=ft.FontWeight.BOLD,
+                                        color="#555555",
+                                    ),
                                 ],
                             ),
                         ],
@@ -2331,16 +2326,19 @@ center_title=True,
                     ),
                     ft.Text(
                         t("sponsor_desc"),
-                        size=layout_body_size(),
+                        size=layout_body_size() + 5,
+                        weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
                     ),
                     ft.Text(
                         t("sponsor_empty"),
-                        size=layout_small_size(),
+                        size=layout_body_size() + 5,
+                        weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
+                        color="#333333",
                     ),
                 ],
-            ),
+            ),	
         )
 
         # 게스트 카드
