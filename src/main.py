@@ -1944,6 +1944,53 @@ center_title=True,
                 return t("public_pending_desc")
 
         return description
+
+    def format_news_date(value):
+        """뉴스 날짜를 YYYY.MM.DD 형식으로 표시합니다."""
+        news_date = str(value or "").strip()
+
+        if not news_date:
+            return ""
+
+        try:
+            return parsedate_to_datetime(
+                news_date
+            ).strftime("%Y.%m.%d")
+        except Exception:
+            pass
+
+        try:
+            return date.fromisoformat(
+                news_date[:10]
+            ).strftime("%Y.%m.%d")
+        except Exception:
+            pass
+
+        match = re.match(
+            r"^(\d{4})[./-](\d{1,2})[./-](\d{1,2})",
+            news_date,
+        )
+
+        if match:
+            year, month, day = match.groups()
+            return f"{year}.{int(month):02d}.{int(day):02d}"
+
+        return news_date[:10].replace("-", ".")
+
+    def get_news_source_text(item):
+        category = item.get("category")
+        sub_category = item.get("sub_category")
+
+        if category == "SNS":
+            if sub_category == "Instagram":
+                return t("source_instagram")
+            return t("source_x")
+
+        if category == "공개":
+            return t("source_official")
+
+        return item.get("source", "")
+
     def build_news_card(item):
         controls = [
             ft.Text(
