@@ -2116,12 +2116,83 @@ center_title=True,
         return []
 
     def render_news_list():
-        """현재 선택된 카테고리의 뉴스 목록만 표시합니다."""
+        """선택한 뉴스 카테고리에 맞는 목록을 표시합니다."""
         if news_content is None:
             return
 
         news_content.controls.clear()
 
+        # 공개 → 참가사: 공식 발표 차수별 목록 표시
+        if (
+            news_category == "공개"
+            and news_sub_category == "참가사"
+        ):
+            news_content.controls.append(
+                ft.Container(
+                    padding=layout_card_padding(),
+                    margin=ft.Margin(bottom=4),
+                    border_radius=16,
+                    bgcolor="#F5F5F5",
+                    content=ft.Column(
+                        spacing=8,
+                        controls=[
+                            ft.Text(
+                                t("public_participant_title"),
+                                size=layout_home_card_title_size() - 2,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                            ft.Text(
+                                "AGF 공식 채널에서 공개한 참가사 목록입니다. "
+                                "부스 번호와 공식 이미지는 표시하지 않습니다.",
+                                size=14,
+                                color="#666666",
+                            ),
+                        ],
+                    ),
+                )
+            )
+
+            for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
+                news_content.controls.append(
+                    ft.Container(
+                        padding=layout_card_padding(),
+                        margin=ft.Margin(bottom=4),
+                        border_radius=16,
+                        bgcolor="#F5F5F5",
+                        content=ft.Column(
+                            spacing=10,
+                            controls=[
+                                ft.Text(
+                                    announcement["title"],
+                                    size=layout_home_card_title_size() - 2,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                                ft.Text(
+                                    " · ".join(
+                                        announcement["names"]
+                                    ),
+                                    size=14,
+                                    color="#444444",
+                                ),
+                                ft.Row(
+                                    alignment=ft.MainAxisAlignment.END,
+                                    controls=[
+                                        ft.Button(
+                                            "공식 발표 보기",
+                                            icon=ft.Icons.OPEN_IN_NEW,
+                                            url=announcement["url"],
+                                        ),
+                                    ],
+                                ),
+                            ],
+                        ),
+                    )
+                )
+
+            page.update()
+            return
+
+        # 나머지 카테고리의 뉴스
         filtered_items = get_filtered_news()
 
         def news_sort_key(item):
