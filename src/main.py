@@ -1931,19 +1931,45 @@ center_title=True,
     # 뉴스 카드
     # ==============================
     def get_news_title_text(item):
+        if item.get("category") == "공개":
+            if item.get("sub_category") == "게스트":
+                return t("public_guest_title")
+            if item.get("sub_category") == "참가사":
+                return t("public_participant_title")
+
         return item.get("title", "")
 
     def get_news_description_text(item):
-        description = str(item.get("description", "")).strip()
-
         if item.get("category") == "공개":
-            if description == "공식 안내가 공개되었습니다. 자세한 내용은 공식 페이지에서 확인하세요.":
+            description = str(
+                item.get("description", "")
+            ).strip()
+
+            if description == (
+                "공식 안내가 공개되었습니다. "
+                "자세한 내용은 공식 페이지에서 확인하세요."
+            ):
                 return t("public_available_desc")
 
-            if description == "공식 안내가 아직 공개되지 않았습니다.":
+            if description:
                 return t("public_pending_desc")
 
-        return description
+        return item.get("description", "")
+
+    def get_news_source_text(item):
+        category = item.get("category")
+        sub_category = item.get("sub_category")
+
+        if category == "SNS":
+            if sub_category == "Instagram":
+                return t("source_instagram")
+
+            return t("source_x")
+
+        if category == "공개":
+            return t("source_official")
+
+        return item.get("source", "")
 
     def format_news_date(value):
         """뉴스 날짜를 YYYY.MM.DD 형식으로 표시합니다."""
@@ -1973,54 +1999,69 @@ center_title=True,
 
         if match:
             year, month, day = match.groups()
-            return f"{year}.{int(month):02d}.{int(day):02d}"
+            return (
+                f"{year}.{int(month):02d}."
+                f"{int(day):02d}"
+            )
 
         return news_date[:10].replace("-", ".")
 
-    def get_news_source_text(item):
-        category = item.get("category")
-        sub_category = item.get("sub_category")
-
-        if category == "SNS":
-            if sub_category == "Instagram":
-                return t("source_instagram")
-            return t("source_x")
-
-        if category == "공개":
-            return t("source_official")
-
-        return item.get("source", "")
-
     def build_news_card(item):
+        # 이미지 없이 텍스트와 공식 링크만 표시합니다.
         controls = [
             ft.Text(
                 get_news_title_text(item),
                 size=layout_home_card_title_size() - 2,
                 weight=ft.FontWeight.BOLD,
             ),
-            ft.Row(
-                spacing=10,
-                controls=[
-                    ft.Text(
-                        format_news_date(item.get("date", "")),
-                        size=14,
-                        color="#777777",
-                    ),
-                    ft.Text(
-                        "·",
-                        size=12,
-                        color="#AAAAAA",
-                    ),
-                    ft.Text(
-                        get_news_source_text(item),
-                        size=13,
-                        color="#777777",
-                    ),
-                ],
-            ),
         ]
 
-        description_text = get_news_description_text(item)
+        # 날짜가 있는 항목만 날짜를 표시합니다.
+        date_text = format_news_date(
+            item.get("date", "")
+        )
+        source_text = get_news_source_text(item)
+
+        metadata_controls = []
+
+        if date_text:
+            metadata_controls.append(
+                ft.Text(
+                    date_text,
+                    size=14,
+                    color="#777777",
+                )
+            )
+
+        if date_text and source_text:
+            metadata_controls.append(
+                ft.Text(
+                    "·",
+                    size=12,
+                    color="#AAAAAA",
+                )
+            )
+
+        if source_text:
+            metadata_controls.append(
+                ft.Text(
+                    source_text,
+                    size=13,
+                    color="#777777",
+                )
+            )
+
+        if metadata_controls:
+            controls.append(
+                ft.Row(
+                    spacing=10,
+                    controls=metadata_controls,
+                )
+            )
+
+        description_text = get_news_description_text(
+            item
+        )
 
         if description_text:
             controls.append(
@@ -2031,13 +2072,16 @@ center_title=True,
                 )
             )
 
-        controls.append(
-            ft.Button(
-                t("official_page"),
-                icon=ft.Icons.OPEN_IN_NEW,
-                url=item["url"],
+        url = str(item.get("url", "")).strip()
+
+        if url:
+            controls.append(
+                ft.Button(
+                    t("official_page"),
+                    icon=ft.Icons.OPEN_IN_NEW,
+                    url=url,
+                )
             )
-        )
 
         return ft.Container(
             padding=layout_card_padding(),
@@ -2056,7 +2100,8 @@ center_title=True,
                 item
                 for item in all_news_items
                 if item.get("category") == "SNS"
-                and item.get("sub_category") == news_sub_category
+                and item.get("sub_category")
+                == news_sub_category
             ]
 
         if news_category == "공개":
@@ -2064,96 +2109,19 @@ center_title=True,
                 item
                 for item in all_news_items
                 if item.get("category") == "공개"
-                and item.get("sub_category") == news_sub_category
+                and item.get("sub_category")
+                == news_sub_category
             ]
 
         return []
 
-    def refresh_news(e=None):
+    def render_news_list():
+        """현재 선택된 카테고리의 뉴스 목록만 표시합니다."""
         if news_content is None:
             return
 
-        new_items = []
-
-        # 기존 뉴스 캐시 사용
-        if cache_file.exists():
-            try:
-                cache_data = json.loads(
-                    cache_file.read_text(
-                        encoding="utf-8"
-                    )
-                )
-
-                cached_items = cache_data.get(
-                    "items",
-                    [],
-                )
-
-                if isinstance(cached_items, list):
-	                    # 기존 SNS와 공개 항목을 제거하고
-                    # 현재 공개 정보로 다시 구성합니다.
-                    filtered_cached_items = [
-                        item
-                        for item in cached_items
-                        if item.get("category") not in ("SNS", "공개")
-                    ]
-                    new_items = filtered_cached_items
-
-                    print(
-                        "[뉴스 캐시] 원본:",
-                        len(cached_items),
-                        "→ 필터 후:",
-                        len(new_items),
-                    )
-
-                    for item in new_items:
-                        print(
-                            "[뉴스 캐시]",
-                            item.get("category"),
-                            item.get("sub_category"),
-                            item.get("date"),
-                            item.get("title"),
-                        )
-
-            except (
-                json.JSONDecodeError,
-                OSError,
-            ) as e:
-                print(
-                    "[뉴스 캐시] 불러오기 실패:",
-                    repr(e),
-                )
-
-        # 사용할 캐시가 없으면 뉴스 정보 확인
-        if not new_items:
-            try:
-                new_items = fetch_all_news() or []
-
-                print(
-                    "[뉴스] 실시간 정보 확인:",
-                    len(new_items),
-                )
-
-            except Exception as e:
-                print(
-                    "[뉴스] 정보 확인 실패:",
-                    repr(e),
-                )
-
-        # 기존 SNS 검색 결과를 제거하고 공식 계정 링크 추가
-        new_items = [
-            item
-            for item in new_items
-            if item.get("category") != "SNS"
-        ]
-
-        new_items.extend(get_official_sns_links())
-
-        # 뉴스 목록 갱신
-        all_news_items.clear()
-        all_news_items.extend(new_items)
-
         news_content.controls.clear()
+
         filtered_items = get_filtered_news()
 
         def news_sort_key(item):
@@ -2176,94 +2144,21 @@ center_title=True,
                     news_date[:10]
                 ).toordinal()
             except Exception:
-                pass
-
-            try:
-                return date(
-                    int(news_date[:4]),
-                    1,
-                    1,
-                ).toordinal()
-            except Exception:
-                pass
-
-            return 0
+                return 0
 
         filtered_items.sort(
             key=news_sort_key,
             reverse=True,
         )
 
-        if (
-            news_category == "공개"
-            and news_sub_category == "참가사"
-        ):
-            news_content.controls.append(
-                ft.Container(
-                    padding=layout_card_padding(),
-                    margin=ft.Margin(bottom=4),
-                    border_radius=16,
-                    bgcolor="#F5F5F5",
-                    content=ft.Column(
-                        spacing=8,
-                        controls=[
-                            ft.Text(
-                                t("public_participant_title"),
-                                size=layout_home_card_title_size() - 2,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.Text(
-                                "AGF 공식 채널에서 공개한 "
-                                "참가사 목록입니다. "
-                                "부스 번호와 공식 이미지는 표시하지 않습니다.",
-                                size=14,
-                                color="#666666",
-                            ),
-                        ],
-                    ),
-                )
-            )
-
-            for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
-                news_content.controls.append(
-                    ft.Container(
-                        padding=layout_card_padding(),
-                        margin=ft.Margin(bottom=4),
-                        border_radius=16,
-                        bgcolor="#F5F5F5",
-                        content=ft.Column(
-                            spacing=10,
-                            controls=[
-                                ft.Text(
-                                    announcement["title"],
-                                    size=layout_home_card_title_size() - 2,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    "\n".join(
-                                        "• " + name
-                                        for name in announcement["names"]
-                                    ),
-                                    size=14,
-                                    color="#444444",
-                                ),
-                                ft.Button(
-                                    t("official_page"),
-                                    icon=ft.Icons.OPEN_IN_NEW,
-                                    url=announcement["url"],
-                                ),
-                            ],
-                        ),
-                    )
-                )
-
-        elif not filtered_items:
+        if not filtered_items:
             news_content.controls.append(
                 ft.Container(
                     padding=20,
                     border_radius=15,
                     bgcolor="#F5F5F5",
                     content=ft.Column(
+                        spacing=8,
                         controls=[
                             ft.Text(
                                 t("no_news_title"),
@@ -2278,30 +2173,56 @@ center_title=True,
                     ),
                 )
             )
-
         else:
             for item in filtered_items:
                 news_content.controls.append(
                     build_news_card(item)
                 )
 
-        # SNS의 X 탭에 공식 타임라인 표시
-        if (
-            news_category == "SNS"
-            and news_sub_category == "X"
-        ):
-            news_content.controls.append(
-                ft.Container(
-                    height=650,
-                    padding=8,
-                    content=fwv.WebView(
-                        url="https://agf-app.onrender.com/assets/x_timeline.html",
-                        height=630,
-                    ),
-                )
+        page.update()
+
+    def refresh_news(e=None):
+        """공식 SNS 링크와 공개 정보를 새로 불러옵니다."""
+        if news_content is None:
+            return
+
+        try:
+            new_items = fetch_all_news() or []
+
+        except Exception as e:
+            print(
+                "[뉴스] 공식 정보 갱신 실패:",
+                repr(e),
             )
 
-        page.update()
+            try:
+                new_items = get_official_sns_links()
+            except Exception as sns_error:
+                print(
+                    "[뉴스] 공식 SNS 링크 처리 실패:",
+                    repr(sns_error),
+                )
+                new_items = []
+
+        # SNS와 공개 카테고리의 공식 데이터만 사용합니다.
+        valid_items = [
+            item
+            for item in new_items
+            if isinstance(item, dict)
+            and item.get("category") in ("SNS", "공개")
+            and str(item.get("url", "")).strip()
+        ]
+
+        all_news_items.clear()
+        all_news_items.extend(valid_items)
+
+        print(
+            "[뉴스] 표시할 공식 정보:",
+            len(all_news_items),
+            "개",
+        )
+
+        render_news_list()
 
     # ==============================
     # 하단 메뉴
@@ -2818,7 +2739,7 @@ center_title=True,
                 else:
                     news_sub_category = "Instagram"
 
-                refresh_news()
+                render_news_list()
 
             news_subcategory_area.content = ft.Tabs(
                 length=2,
@@ -2843,7 +2764,9 @@ center_title=True,
                             ),
                             tabs=[
                                 ft.Tab(label="X"),
-                                ft.Tab(label=t("instagram")),
+                                ft.Tab(
+                                    label=t("instagram")
+                                ),
                             ],
                         ),
                     ],
@@ -2861,7 +2784,7 @@ center_title=True,
                 else:
                     news_sub_category = "참가사"
 
-                refresh_news()
+                render_news_list()
 
             news_subcategory_area.content = ft.Tabs(
                 length=2,
@@ -2886,45 +2809,16 @@ center_title=True,
                             ),
                             tabs=[
                                 ft.Tab(label=t("guest")),
-                                ft.Tab(label=t("participant")),
+                                ft.Tab(
+                                    label=t("participant")
+                                ),
                             ],
                         ),
                     ],
                 ),
             )
 
-        if news_content is not None:
-            news_content.controls.clear()
-            filtered_items = get_filtered_news()
-
-            if not filtered_items:
-                news_content.controls.append(
-                    ft.Container(
-                        padding=20,
-                        border_radius=15,
-                        bgcolor="#F5F5F5",
-                        content=ft.Column(
-                            controls=[
-                                ft.Text(
-                                    t("no_news_title"),
-                                    size=18,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    t("no_news_desc"),
-                                    size=14,
-                                ),
-                            ],
-                        ),
-                    )
-                )
-            else:
-                for item in filtered_items:
-                    news_content.controls.append(
-                        build_news_card(item)
-                    )
-
-        page.update()
+        render_news_list()
 
     # ==============================
     # 화면 전환
@@ -2945,9 +2839,6 @@ center_title=True,
             content_area.content = build_home_view()
 
         elif index == 1:
-            news_category = "SNS"
-            news_sub_category = "X"
-
             # 뉴스 목록 컨트롤 준비
             news_content = ft.Column(
                 spacing=10,
@@ -2962,7 +2853,7 @@ center_title=True,
             news_category = "SNS"
             news_sub_category = "X"
 
-            # 뉴스 상단 탭
+            # 뉴스 상단 탭 준비
             news_tabs_control = ft.Tabs(
                 length=2,
                 selected_index=0,
@@ -2979,8 +2870,14 @@ center_title=True,
                                 weight=ft.FontWeight.BOLD,
                             ),
                             label_padding=ft.Padding(
-                                left=max(10, layout_card_padding() - 2),
-                                right=max(10, layout_card_padding() - 2),
+                                left=max(
+                                    10,
+                                    layout_card_padding() - 2,
+                                ),
+                                right=max(
+                                    10,
+                                    layout_card_padding() - 2,
+                                ),
                                 top=8,
                                 bottom=8,
                             ),
@@ -2993,7 +2890,7 @@ center_title=True,
                 ),
             )
 
-            # 먼저 뉴스 화면의 전체 구조를 구성합니다.
+            # 먼저 화면 전체 구조를 구성합니다.
             content_area.content = ft.Column(
                 expand=True,
                 scroll=ft.ScrollMode.AUTO,
@@ -3009,7 +2906,10 @@ center_title=True,
                             ),
                         ),
                         content=ft.Row(
-                            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                            alignment=(
+                                ft.MainAxisAlignment
+                                .SPACE_BETWEEN
+                            ),
                             controls=[
                                 ft.Text(
                                     t("agf_news"),
@@ -3041,14 +2941,13 @@ center_title=True,
                 ],
             )
 
-            # 뉴스 화면을 먼저 페이지에 반영합니다.
+            # 화면을 페이지에 연결한 다음 하위 탭을 초기화합니다.
             page.update()
-
-            # 페이지에 연결된 다음 하위 탭을 초기화합니다.
             news_tab_changed(selected_index=0)
 
-            # 뉴스 목록을 불러옵니다.
+            # 최신 공식 정보 불러오기
             refresh_news()
+
         elif index == 2:
             # ==============================
             # AGF 스테이지 - 타임테이블
@@ -3320,14 +3219,17 @@ center_title=True,
                             content=ft.Column(
                                 spacing=10,
                                 controls=[
-                                    ft.Text(t("stage_appearances"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
+                        ft.Text(t("stage_appearances"), size=layout_body_size() + 2, weight=ft.FontWeight.BOLD),
                                     *schedule_controls,
                                 ],
                             ),
                         ),
                     ],
                 )
-                page.update()
+
+            page.update()
+            news_tab_changed(selected_index=0)
+            refresh_news()
 
             def show_stage_detail(date_name, stage_name, item):
                 dialog = ft.AlertDialog(
@@ -4165,7 +4067,7 @@ center_title=True,
             actions=[ft.TextButton(t("close"), on_click=close_beta)],
         )
         page.show_dialog(dialog)
-
+	
     show_beta_dialog()
     refresh_home_sns()
 
