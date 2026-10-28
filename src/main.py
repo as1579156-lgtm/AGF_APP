@@ -22,9 +22,186 @@ else:
 CURRENT_YEAR = date.today().year
 AGF_TITLE = f"AGF {CURRENT_YEAR} 정보"
 
-# 참가사 정보
-# 실제 공식 참가사 정보 공개 후 데이터 추가
+# 부스 화면용 참가사 데이터
 participants = []
+
+# 공개 탭용 AGF 2026 참가사 목록
+PUBLIC_PARTICIPANT_ANNOUNCEMENTS = [
+    {
+        "title": "1차 공개",
+        "url": "https://x.com/AGF_Korea/status/2111985688489119820",
+        "names": [
+            "넥슨",
+            "스마일게이트",
+            "구글 플레이",
+            "주식회사 홀로시브",
+            "YOSTAR",
+            "주식회사 스콘",
+        ],
+    },
+    {
+        "title": "2차 공개",
+        "url": "https://x.com/AGF_Korea/status/2112348077592125884",
+        "names": [
+            "브라운더스트2",
+            "고양이와 스프",
+            "케이티스튜디오지니",
+            "NIJISANJI",
+            "주식회사 팀테트라포드",
+        ],
+    },
+    {
+        "title": "3차 공개",
+        "url": "https://x.com/AGF_Korea/status/2112710469253271899",
+        "names": [
+            "세가/아틀러스",
+            "Crunchyroll",
+            "에스엠지홀딩스",
+            "Lenovo",
+            "크레플",
+            "한림사",
+            "스튜디오 그린기린",
+            "XEROmotion",
+        ],
+    },
+    {
+        "title": "4차 공개",
+        "url": "https://x.com/AGF_Korea/status/2113072850311782679",
+        "names": [
+            "뱅드림! 아워 노트",
+            "GNFTOYZ",
+            "럭앤픽",
+            "요시요시 스튜디오",
+            "디엠피 북스토아",
+            "잇츠하비",
+            "T toy studio",
+        ],
+    },
+    {
+        "title": "5차 공개",
+        "url": "https://x.com/AGF_Korea/status/2113435239292846384",
+        "names": [
+            "젠잇",
+            "하이라이트 픽",
+            "코멧소프트",
+            "카하문방구",
+            "하나미즈온천아카데미 커플쳐부수기",
+            "스태커배틀",
+        ],
+    },
+    {
+        "title": "6차 공개",
+        "url": "https://x.com/AGF_Korea/status/2114522398980710649",
+        "names": [
+            "승리의 여신: 니케",
+            "트릭컬 리바이브",
+            "포카이브 스테이션",
+            "이스타에그",
+            "샤카샤카",
+            "크리에이터버스",
+            "스튜디오 세뇨",
+        ],
+    },
+    {
+        "title": "7차 공개",
+        "url": "https://x.com/AGF_Korea/status/2114884789710852600",
+        "names": [
+            "베이비챗",
+            "ASL / 화모선",
+            "BLOKEES",
+            "주식회사 키쿠",
+            "가우리피규어",
+            "프레젠스월드",
+        ],
+    },
+    {
+        "title": "8차 공개",
+        "url": "https://x.com/AGF_Korea/status/2115247179975799016",
+        "names": [
+            "위메이드커넥트",
+            "(주)디앤씨미디어",
+            "peropero",
+            "VO6 TCG",
+            "VLooM",
+            "미스틱뮤즈",
+            "MW:MEU",
+        ],
+    },
+]
+
+# 공개된 참가사를 부스 화면에 표시합니다.
+# 공식 부스 번호가 공개되지 않은 경우 임의로 지정하지 않습니다.
+participants = [
+    {"name": name, "booth": "미공개"}
+    for name in dict.fromkeys(
+        name
+        for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS
+        for name in announcement["names"]
+    )
+]
+
+# 공식 공개된 RED 스테이지 일정
+PUBLIC_RED_STAGE = {
+    "12월 5일(토)": [
+        {
+            "time": "11:45~12:30",
+            "title": "주홍색 가면",
+            "guest": "키무라 타이히 · 야마모토 유우키 · 남도형 · 이여름",
+        },
+        {
+            "time": "13:00~13:45",
+            "title": "페이트/그랜드 오더 스테이지",
+            "guest": "타카하시 리에 · 아카바네 켄지",
+        },
+        {
+            "time": "14:15~15:00",
+            "title": "추후 공개",
+            "guest": "출연진 추후 공개",
+        },
+        {
+            "time": "15:30~16:15",
+            "title": "반딧불이의 혼례",
+            "guest": "Lynn · 우치야마 코우키",
+        },
+        {
+            "time": "16:45~17:30",
+            "title": "Re: 제로부터 시작하는 이세계 생활 스페셜 스테이지",
+            "guest": "코바야시 유스케 · 타카하시 리에",
+        },
+    ],
+    "12월 6일(일)": [
+        {
+            "time": "10:30~11:15",
+            "title": "NIJISANJI_AGF2026",
+            "guest": "3SKM · 키타미 유우세이 · 카이세이 · 사카키 네스",
+        },
+        {
+            "time": "11:45~12:30",
+            "title": "극장판 마법소녀 마도카☆마기카 〈발푸르기스의 회천〉",
+            "guest": "사이토 치와 · 카토 에미리",
+        },
+        {
+            "time": "13:00~13:45",
+            "title": "GACHIAKUTA",
+            "guest": "이치카와 아오이 · 코니시 카츠유키",
+        },
+        {
+            "time": "14:15~15:00",
+            "title": "최애의 아이 스페셜 스테이지",
+            "guest": "이고마 유리에 · 한 메구미",
+        },
+        {
+            "time": "15:30~16:15",
+            "title": "고깔모자의 아틀리에 스페셜 스테이지",
+            "guest": "모토무라 레나 · 하나에 나츠키",
+        },
+        {
+            "time": "17:00~17:45",
+            "title": "DJ Kazu CLOSING PARTY",
+            "guest": "DJ Kazu",
+        },
+    ],
+}
 
 # 배치도 파일
 map_file = (
@@ -60,65 +237,33 @@ def get_official_sns_links():
     ]
 
 def fetch_public_news():
-    page_data = [
+    return [
         {
-            "title": "AGF 2026 게스트 · 성우",
-            "url": "https://www.agfkorea.com/stage?idx=1",
+            "title": "AGF 2026 RED 스테이지 타임테이블 공개",
+            "url": "https://x.com/AGF_Korea/status/2115322678319976772",
+            "category": "공개",
             "sub_category": "게스트",
-        },
-        {
-            "title": "AGF 2026 참가사",
-            "url": "https://www.agfkorea.com/information",
-            "sub_category": "참가사",
-        },
+            "date": "2026-10-28",
+            "source": "출처: AGF Korea X",
+            "description": (
+                "12월 5일(토)과 6일(일) RED 스테이지 "
+                "총 11회차의 타임테이블이 공개되었습니다.\n\n"
+                "12월 5일: 주홍색 가면, 페이트/그랜드 오더, "
+                "반딧불이의 혼례, Re: 제로부터 시작하는 "
+                "이세계 생활 스페셜 스테이지 등\n\n"
+                "12월 6일: NIJISANJI_AGF2026, "
+                "극장판 마법소녀 마도카☆마기카 "
+                "〈발푸르기스의 회천〉, GACHIAKUTA, "
+                "최애의 아이, 고깔모자의 아틀리에, "
+                "DJ Kazu CLOSING PARTY\n\n"
+                "RED 스테이지 사전 예매: 11월 20일(금) 18:00 "
+                "멜론 티켓\n"
+                "AGF 입장권 소지자 무료 관람이며, "
+                "지정 좌석 사전 예매가 필요합니다.\n"
+                "BLUE 스테이지 상세 일정은 추후 공개 예정입니다."
+            ),
+        }
     ]
-
-    news_items = []
-
-    for item in page_data:
-        available = False
-
-        try:
-            request = urllib.request.Request(
-                item["url"],
-                headers={"User-Agent": "Mozilla/5.0"},
-            )
-
-            with urllib.request.urlopen(
-                request,
-                timeout=10,
-            ) as response:
-                html = response.read().decode(
-                    "utf-8",
-                    errors="ignore",
-                )
-
-            if "Coming soon" not in html:
-                available = True
-
-        except Exception as e:
-            print(
-                f"{item['sub_category']} 공식 페이지 확인 실패:",
-                e,
-            )
-
-        news_items.append(
-            {
-                "title": item["title"],
-                "url": item["url"],
-                "category": "공개",
-                "sub_category": item["sub_category"],
-                "source": "출처: AGF Korea",
-                "description": (
-                    "공식 안내가 공개되었습니다. 자세한 내용은 공식 페이지에서 확인하세요."
-                    if available
-                    else "공식 안내가 아직 공개되지 않았습니다."
-                ),
-            }
-        )
-
-    return news_items
-
 
 def fetch_all_news():
     all_items = []
@@ -1786,59 +1931,19 @@ center_title=True,
     # 뉴스 카드
     # ==============================
     def get_news_title_text(item):
-        if item.get("category") == "공개":
-            if item.get("sub_category") == "게스트":
-                return t("public_guest_title")
-            if item.get("sub_category") == "참가사":
-                return t("public_participant_title")
-
         return item.get("title", "")
 
     def get_news_description_text(item):
-        if item.get("category") == "공개":
-            description = str(item.get("description", "")).strip()
+        description = str(item.get("description", "")).strip()
 
+        if item.get("category") == "공개":
             if description == "공식 안내가 공개되었습니다. 자세한 내용은 공식 페이지에서 확인하세요.":
                 return t("public_available_desc")
 
-            if description:
+            if description == "공식 안내가 아직 공개되지 않았습니다.":
                 return t("public_pending_desc")
 
-        return item.get("description", "")
-
-    def get_news_source_text(item):
-        category = item.get("category")
-        sub_category = item.get("sub_category")
-
-        if category == "SNS":
-            if sub_category == "Instagram":
-                return t("source_instagram")
-            return t("source_x")
-
-        if category == "공개":
-            return t("source_official")
-
-        return item.get("source", "")
-
-    def format_news_date(value):
-        """뉴스 날짜 표시 형식을 YYYY.MM.DD로 통일합니다."""
-        news_date = str(value or "").strip()
-        if not news_date:
-            return ""
-        try:
-            return parsedate_to_datetime(news_date).strftime("%Y.%m.%d")
-        except Exception:
-            pass
-        try:
-            return date.fromisoformat(news_date[:10]).strftime("%Y.%m.%d")
-        except Exception:
-            pass
-        match = re.match(r"^(\d{4})[./-](\d{1,2})[./-](\d{1,2})", news_date)
-        if match:
-            year, month, day = match.groups()
-            return f"{year}.{int(month):02d}.{int(day):02d}"
-        return news_date[:10].replace("-", ".")
-
+        return description
     def build_news_card(item):
         controls = [
             ft.Text(
@@ -1924,8 +2029,6 @@ center_title=True,
         new_items = []
 
         # 기존 뉴스 캐시 사용
-        new_items = []
-        
         if cache_file.exists():
             try:
                 cache_data = json.loads(
@@ -1940,13 +2043,13 @@ center_title=True,
                 )
 
                 if isinstance(cached_items, list):
-                    # 기존 Google 뉴스 RSS에서 저장된 SNS 항목 제외
+	                    # 기존 SNS와 공개 항목을 제거하고
+                    # 현재 공개 정보로 다시 구성합니다.
                     filtered_cached_items = [
                         item
                         for item in cached_items
-                        if item.get("category") != "SNS"
+                        if item.get("category") not in ("SNS", "공개")
                     ]
-
                     new_items = filtered_cached_items
 
                     print(
@@ -2044,7 +2147,70 @@ center_title=True,
             reverse=True,
         )
 
-        if not filtered_items:
+        if (
+            news_category == "공개"
+            and news_sub_category == "참가사"
+        ):
+            news_content.controls.append(
+                ft.Container(
+                    padding=layout_card_padding(),
+                    margin=ft.Margin(bottom=4),
+                    border_radius=16,
+                    bgcolor="#F5F5F5",
+                    content=ft.Column(
+                        spacing=8,
+                        controls=[
+                            ft.Text(
+                                t("public_participant_title"),
+                                size=layout_home_card_title_size() - 2,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                            ft.Text(
+                                "AGF 공식 채널에서 공개한 "
+                                "참가사 목록입니다. "
+                                "부스 번호와 공식 이미지는 표시하지 않습니다.",
+                                size=14,
+                                color="#666666",
+                            ),
+                        ],
+                    ),
+                )
+            )
+
+            for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
+                news_content.controls.append(
+                    ft.Container(
+                        padding=layout_card_padding(),
+                        margin=ft.Margin(bottom=4),
+                        border_radius=16,
+                        bgcolor="#F5F5F5",
+                        content=ft.Column(
+                            spacing=10,
+                            controls=[
+                                ft.Text(
+                                    announcement["title"],
+                                    size=layout_home_card_title_size() - 2,
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                                ft.Text(
+                                    "\n".join(
+                                        "• " + name
+                                        for name in announcement["names"]
+                                    ),
+                                    size=14,
+                                    color="#444444",
+                                ),
+                                ft.Button(
+                                    t("official_page"),
+                                    icon=ft.Icons.OPEN_IN_NEW,
+                                    url=announcement["url"],
+                                ),
+                            ],
+                        ),
+                    )
+                )
+
+        elif not filtered_items:
             news_content.controls.append(
                 ft.Container(
                     padding=20,
@@ -2071,6 +2237,22 @@ center_title=True,
                 news_content.controls.append(
                     build_news_card(item)
                 )
+
+        # SNS의 X 탭에 공식 타임라인 표시
+        if (
+            news_category == "SNS"
+            and news_sub_category == "X"
+        ):
+            news_content.controls.append(
+                ft.Container(
+                    height=650,
+                    padding=8,
+                    content=fwv.WebView(
+                        url="https://agf-app.onrender.com/assets/x_timeline.html",
+                        height=630,
+                    ),
+                )
+            )
 
         page.update()
 
@@ -2192,7 +2374,7 @@ center_title=True,
                 )
             )
 
-        home_sns_content.update()
+        page.update()
 
     def build_home_view():
         # SNS 최신 소식
@@ -2476,15 +2658,83 @@ center_title=True,
                 ],
             ),
         )
+        # 메인 화면 공개 참가사 목록
+        participant_announcement_cards = []
 
+        for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
+            participant_announcement_cards.append(
+                ft.Container(
+                    padding=12,
+                    border_radius=12,
+                    bgcolor="#FFFFFF",
+                    content=ft.Column(
+                        spacing=8,
+                        controls=[
+                            ft.Text(
+                                announcement["title"],
+                                size=layout_body_size() + 1,
+                                weight=ft.FontWeight.BOLD,
+                            ),
+                            ft.Text(
+                                " · ".join(announcement["names"]),
+                                size=layout_small_size(),
+                                color="#444444",
+                            ),
+                            ft.Row(
+                                alignment=ft.MainAxisAlignment.END,
+                                controls=[
+                                    ft.Button(
+                                        "공식 발표 보기",
+                                        icon=ft.Icons.OPEN_IN_NEW,
+                                        url=announcement["url"],
+                                    ),
+                                ],
+                            ),
+                        ],
+                    ),
+                )
+            )
+
+        public_participant_section = ft.Container(
+            margin=ft.Margin(
+                left=layout_side_padding(),
+                right=layout_side_padding(),
+                top=0,
+                bottom=max(8, layout_card_padding() - 2),
+            ),
+            padding=layout_card_padding(),
+            border_radius=18,
+            bgcolor="#F5F5F5",
+            content=ft.Column(
+                spacing=10,
+                controls=[
+                    ft.Text(
+                        t("public_participant_title"),
+                        size=layout_home_card_title_size() - 2,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Text(
+                        "공식 발표 차수별 참가사 목록입니다. "
+                        "부스 번호와 배치도는 포함하지 않습니다.",
+                        size=layout_small_size(),
+                        color="#666666",
+                    ),
+                    ft.Column(
+                        spacing=8,
+                        controls=participant_announcement_cards,
+                    ),
+                ],
+            ),
+        )
         return ft.Column(
             expand=True,
             scroll=ft.ScrollMode.AUTO,
             spacing=0,
             controls=[
-                home_sns,
-                ticket_card,
                 home_swipe_area,
+                ticket_card,
+                home_sns,
+                public_participant_section,
             ],
         )
 
@@ -2690,7 +2940,6 @@ center_title=True,
                 ),
             )
 
-            news_tab_changed(selected_index=0)
 
             content_area.content = ft.Column(
                 expand=True,
@@ -2733,6 +2982,8 @@ center_title=True,
                 ],
             )
 
+            page.update()
+            news_tab_changed(selected_index=0)
             refresh_news()
 
         elif index == 2:
@@ -2775,16 +3026,28 @@ center_title=True,
                 return (int(m.group(1)), int(m.group(2)), str(value or ""))
 
             def build_default_stage_data():
-                return {
+                data = {
                     d: {
                         stage_name: [
-                            {"time": time_value, "title": "", "guest": ""}
+                            {
+                                "time": time_value,
+                                "title": "",
+                                "guest": "",
+                            }
                             for time_value in STAGE_TIME_SLOTS[stage_name]
                         ]
                         for stage_name in ["Red", "Blue"]
                     }
                     for d in stage_date_names
                 }
+
+                # 공개된 RED 스테이지 일정 반영
+                for date_name, rows in PUBLIC_RED_STAGE.items():
+                    data[date_name]["Red"] = [
+                        dict(item) for item in rows
+                    ]
+
+                return data
 
             def ensure_stage_time_slots(data):
                 for date_name in stage_date_names:
@@ -2795,22 +3058,37 @@ center_title=True,
                         if not isinstance(data[date_name].get(stage_name), list):
                             data[date_name][stage_name] = []
 
-                    red_items = data[date_name]["Red"]
-                    blue_items = data[date_name]["Blue"]
                     for stage_name in ["Red", "Blue"]:
                         stage_items_list = data[date_name][stage_name]
-                        existing_times = {
-                            str(item.get("time", "")).strip()
-                            for item in stage_items_list
-                            if isinstance(item, dict)
-                        }
-                        for time_value in STAGE_TIME_SLOTS[stage_name]:
-                            if time_value not in existing_times:
-                                stage_items_list.append(
-                                    {"time": time_value, "title": "", "guest": ""}
-                                )
 
-                        # 실제 데이터가 있어도 임시 시간 슬롯은 유지하고, 항상 시간순으로 표시합니다.
+                        has_announced_data = any(
+                            isinstance(item, dict)
+                            and (
+                                str(item.get("title", "")).strip()
+                                or str(item.get("guest", "")).strip()
+                            )
+                            for item in stage_items_list
+                        )
+
+                        # 실제 공개 일정이 없는 스테이지에만
+                        # 기본 시간 슬롯을 추가합니다.
+                        if not has_announced_data:
+                            existing_times = {
+                                str(item.get("time", "")).strip()
+                                for item in stage_items_list
+                                if isinstance(item, dict)
+                            }
+
+                            for time_value in STAGE_TIME_SLOTS[stage_name]:
+                                if time_value not in existing_times:
+                                    stage_items_list.append(
+                                        {
+                                            "time": time_value,
+                                            "title": "",
+                                            "guest": "",
+                                        }
+                                    )
+
                         stage_items_list.sort(
                             key=lambda x: time_sort_key(x.get("time", ""))
                         )
@@ -2826,6 +3104,20 @@ center_title=True,
                     data = json.loads(stage_file.read_text(encoding="utf-8"))
                     if not isinstance(data, dict):
                         return default
+
+                    for date_name in stage_date_names:
+                        if not isinstance(data.get(date_name), dict):
+                            data[date_name] = {
+                                "Red": [],
+                                "Blue": [],
+                            }
+
+                    # 저장된 이전 시간표 대신 공개된 RED 일정을 적용합니다.
+                    for date_name, rows in PUBLIC_RED_STAGE.items():
+                        data[date_name]["Red"] = [
+                            dict(item) for item in rows
+                        ]
+
                     return ensure_stage_time_slots(data)
                 except (json.JSONDecodeError, OSError):
                     return default
@@ -2840,7 +3132,7 @@ center_title=True,
             stage_data = load_stage_data()
             guest_data = {}
             stage_admin_password = os.getenv("AGF_ADMIN_PASSWORD", "")
-            stage_selected_date = stage_date_names[0]
+            stage_selected_date = stage_date_names[1]
             stage_selected_name = "Red"
 
             stage_date_labels = {
@@ -3213,7 +3505,7 @@ center_title=True,
 
             date_tabs_control = ft.Tabs(
                 length=3,
-                selected_index=0,
+                selected_index=stage_date_names.index(stage_selected_date),
                 on_change=date_tab_changed,
                 content=ft.Column(
                     controls=[
