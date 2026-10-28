@@ -2658,6 +2658,7 @@ center_title=True,
                 ],
             ),
         )
+
         # 메인 화면 공개 참가사 목록
         participant_announcement_cards = []
 
@@ -2897,6 +2898,10 @@ center_title=True,
             content_area.content = build_home_view()
 
         elif index == 1:
+            news_category = "SNS"
+            news_sub_category = "X"
+
+            # 뉴스 목록 컨트롤 준비
             news_content = ft.Column(
                 spacing=10,
                 controls=[
@@ -2910,6 +2915,7 @@ center_title=True,
             news_category = "SNS"
             news_sub_category = "X"
 
+            # 뉴스 상단 탭
             news_tabs_control = ft.Tabs(
                 length=2,
                 selected_index=0,
@@ -2940,7 +2946,7 @@ center_title=True,
                 ),
             )
 
-
+            # 먼저 뉴스 화면의 전체 구조를 구성합니다.
             content_area.content = ft.Column(
                 expand=True,
                 scroll=ft.ScrollMode.AUTO,
@@ -2950,7 +2956,10 @@ center_title=True,
                             left=layout_side_padding(),
                             right=layout_side_padding(),
                             top=layout_card_padding() + 4,
-                            bottom=max(6, layout_card_padding() - 4),
+                            bottom=max(
+                                6,
+                                layout_card_padding() - 4,
+                            ),
                         ),
                         content=ft.Row(
                             alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -2974,7 +2983,10 @@ center_title=True,
                         padding=ft.Padding(
                             left=layout_side_padding(),
                             right=layout_side_padding(),
-                            top=max(8, layout_card_padding() - 2),
+                            top=max(
+                                8,
+                                layout_card_padding() - 2,
+                            ),
                             bottom=layout_card_padding() + 4,
                         ),
                         content=news_content,
@@ -2982,10 +2994,14 @@ center_title=True,
                 ],
             )
 
+            # 뉴스 화면을 먼저 페이지에 반영합니다.
             page.update()
-            news_tab_changed(selected_index=0)
-            refresh_news()
 
+            # 페이지에 연결된 다음 하위 탭을 초기화합니다.
+            news_tab_changed(selected_index=0)
+
+            # 뉴스 목록을 불러옵니다.
+            refresh_news()
         elif index == 2:
             # ==============================
             # AGF 스테이지 - 타임테이블
@@ -4096,7 +4112,6 @@ center_title=True,
         def close_beta(e):
             page.pop_dialog()
             show_site_notice_if_needed()
-
         dialog = ft.AlertDialog(
             title=ft.Text(t("beta_dialog_title"), weight=ft.FontWeight.BOLD),
             content=ft.Text(t("beta_dialog_message"), size=15),
