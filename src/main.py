@@ -2156,32 +2156,56 @@ center_title=True,
                 news_content.controls.append(
                     ft.Container(
                         padding=layout_card_padding(),
-                        margin=ft.Margin(bottom=4),
+                        margin=ft.Margin(bottom=8),
                         border_radius=16,
                         bgcolor="#F5F5F5",
                         content=ft.Column(
                             spacing=10,
+                            tight=True,
                             controls=[
-                                ft.Text(
-                                    announcement["title"],
-                                    size=layout_home_card_title_size() - 2,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    " · ".join(
-                                        announcement["names"]
-                                    ),
-                                    size=14,
-                                    color="#444444",
-                                ),
                                 ft.Row(
-                                    alignment=ft.MainAxisAlignment.END,
+                                    alignment=ft.MainAxisAlignment.START,
+                                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                    spacing=8,
                                     controls=[
+                                        ft.Text(
+                                            announcement["title"],
+                                            size=layout_home_card_title_size() + 2,
+                                            weight=ft.FontWeight.BOLD,
+                                        ),
                                         ft.Button(
                                             "공식 발표 보기",
                                             icon=ft.Icons.OPEN_IN_NEW,
                                             url=announcement["url"],
                                         ),
+                                    ],
+                                ),
+                                ft.Column(
+                                    spacing=6,
+                                    tight=True,
+                                    controls=[
+                                        ft.Row(
+                                            spacing=8,
+                                            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                            controls=[
+                                                ft.Container(
+                                                    expand=1,
+                                                    content=ft.Text(
+                                                        "• " + name,
+                                                        size=layout_small_size(),
+                                                        color="#444444",
+                                                    ),
+                                                )
+                                                for name in announcement["names"][
+                                                    row_start:row_start + 3
+                                                ]
+                                            ],
+                                        )
+                                        for row_start in range(
+                                            0,
+                                            len(announcement["names"]),
+                                            3,
+                                        )
                                     ],
                                 ),
                             ],
@@ -2433,7 +2457,7 @@ center_title=True,
                         controls=[
                             ft.Text(
                                 f"📱 {t('latest_sns')}",
-                                size=layout_home_card_title_size(),
+                                size=layout_home_card_title_size() + 2,
                                 weight=ft.FontWeight.BOLD,
                             ),
                             ft.TextButton(
@@ -2704,30 +2728,56 @@ center_title=True,
         for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
             participant_announcement_cards.append(
                 ft.Container(
-                    padding=12,
-                    border_radius=12,
+                    padding=layout_card_padding(),
+                    border_radius=16,
                     bgcolor="#FFFFFF",
                     content=ft.Column(
-                        spacing=8,
+                        spacing=10,
+                        tight=True,
                         controls=[
-                            ft.Text(
-                                announcement["title"],
-                                size=layout_body_size() + 1,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.Text(
-                                " · ".join(announcement["names"]),
-                                size=layout_small_size(),
-                                color="#444444",
-                            ),
                             ft.Row(
-                                alignment=ft.MainAxisAlignment.END,
+                                alignment=ft.MainAxisAlignment.START,
+                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                spacing=8,
                                 controls=[
+                                    ft.Text(
+                                        announcement["title"],
+                                        size=layout_home_card_title_size(),
+                                        weight=ft.FontWeight.BOLD,
+                                    ),
                                     ft.Button(
                                         "공식 발표 보기",
                                         icon=ft.Icons.OPEN_IN_NEW,
                                         url=announcement["url"],
                                     ),
+                                ],
+                            ),
+                            ft.Column(
+                                spacing=6,
+                                tight=True,
+                                controls=[
+                                    ft.Row(
+                                        spacing=8,
+                                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                                        controls=[
+                                            ft.Container(
+                                                expand=1,
+                                                content=ft.Text(
+                                                    "• " + name,
+                                                    size=layout_small_size(),
+                                                    color="#444444",
+                                                ),
+                                            )
+                                            for name in announcement["names"][
+                                                row_start:row_start + 3
+                                            ]
+                                        ],
+                                    )
+                                    for row_start in range(
+                                        0,
+                                        len(announcement["names"]),
+                                        3,
+                                    )
                                 ],
                             ),
                         ],
@@ -4147,3 +4197,4 @@ if __name__ == "__main__":
     ft.run(main)
 else:
     app = ft.run(main, export_asgi_app=True)
+
