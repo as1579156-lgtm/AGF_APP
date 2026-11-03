@@ -2192,7 +2192,7 @@ center_title=True,
                                                     expand=1,
                                                     content=ft.Text(
                                                         "• " + name,
-                                                        size=layout_small_size(),
+                                                        size=layout_small_size() + 2,
                                                         color="#444444",
                                                     ),
                                                 )
@@ -2573,17 +2573,160 @@ center_title=True,
             ),	
         )
 
+
+        # RED 스테이지 공개 정보에서 게스트 명단 만들기
+        red_stage_guest_names = []
+
+        for schedules in PUBLIC_RED_STAGE.values():
+            for schedule in schedules:
+                guest_text = str(
+                    schedule.get("guest", "")
+                ).strip()
+
+                if (
+                    not guest_text
+                    or "추후 공개" in guest_text
+                ):
+                    continue
+
+                for guest_name in guest_text.split(" · "):
+                    guest_name = guest_name.strip()
+
+                    if (
+                        guest_name
+                        and guest_name not in red_stage_guest_names
+                    ):
+                        red_stage_guest_names.append(guest_name)
+
+        # RED 스테이지 일정 카드 내용 만들기
+        red_stage_schedule_controls = []
+
+        for stage_date, schedules in PUBLIC_RED_STAGE.items():
+            red_stage_schedule_controls.append(
+                ft.Text(
+                    stage_date,
+                    size=layout_body_size(),
+                    weight=ft.FontWeight.BOLD,
+                )
+            )
+
+            for schedule in schedules:
+                red_stage_schedule_controls.append(
+                    ft.Container(
+                        padding=8,
+                        border_radius=10,
+                        bgcolor="#FFFFFF",
+                        content=ft.Column(
+                            spacing=3,
+                            tight=True,
+                            controls=[
+                                ft.Text(
+                                    f"{schedule['time']} · "
+                                    f"{schedule['title']}",
+                                    size=layout_small_size(),
+                                    weight=ft.FontWeight.BOLD,
+                                ),
+                                ft.Text(
+                                    f"출연진: {schedule['guest']}",
+                                    size=layout_small_size(),
+                                    color="#555555",
+                                ),
+                            ],
+                        ),
+                    )
+                )
+
+
+        # 홈 스와이프 카드용 RED 스테이지 주요 일정 3개
+        red_stage_preview = []
+
+        for stage_date, schedules in PUBLIC_RED_STAGE.items():
+            announced_schedules = [
+                schedule
+                for schedule in schedules
+                if schedule.get("title")
+                and "추후 공개" not in schedule.get("title", "")
+            ]
+
+            for schedule in announced_schedules[:2]:
+                red_stage_preview.append((stage_date, schedule))
+
+        red_stage_preview = red_stage_preview[:3]
+
+        # 게스트 카드에 표시할 미리보기
+        guest_preview_controls = []
+
+        for stage_date, schedule in red_stage_preview:
+            guest_preview_controls.append(
+                ft.Container(
+                    padding=8,
+                    border_radius=10,
+                    bgcolor="#FFFFFF",
+                    content=ft.Column(
+                        spacing=3,
+                        tight=True,
+                        controls=[
+                            ft.Text(
+                                f"{stage_date} · {schedule['title']}",
+                                size=layout_small_size(),
+                                weight=ft.FontWeight.BOLD,
+                                max_lines=1,
+                                overflow=ft.TextOverflow.ELLIPSIS,
+                            ),
+                            ft.Text(
+                                schedule["guest"],
+                                size=layout_small_size(),
+                                color="#555555",
+                                max_lines=2,
+                                overflow=ft.TextOverflow.ELLIPSIS,
+                            ),
+                        ],
+                    ),
+                )
+            )
+
+        # 스테이지 카드에 표시할 미리보기
+        stage_preview_controls = []
+
+        for stage_date, schedule in red_stage_preview:
+            stage_preview_controls.append(
+                ft.Container(
+                    padding=8,
+                    border_radius=10,
+                    bgcolor="#FFFFFF",
+                    content=ft.Column(
+                        spacing=3,
+                        tight=True,
+                        controls=[
+                            ft.Text(
+                                f"{stage_date} · {schedule['time']}",
+                                size=layout_small_size(),
+                                color="#666666",
+                            ),
+                            ft.Text(
+                                schedule["title"],
+                                size=layout_body_size(),
+                                weight=ft.FontWeight.BOLD,
+                                max_lines=1,
+                                overflow=ft.TextOverflow.ELLIPSIS,
+                            ),
+                        ],
+                    ),
+                )
+            )
+
         # 게스트 카드
         guest_card = ft.Container(
             width=float("inf"),
+            height=layout_home_card_height(),
             padding=layout_card_padding(),
             border_radius=18,
             bgcolor="#F5F5F5",
             on_click=open_guest_news,
             content=ft.Column(
-                spacing=8,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True,
+                spacing=6,
+                scroll=ft.ScrollMode.AUTO,
                 controls=[
                     ft.Text(
                         f"🎤 {t('guest_card')}",
@@ -2592,16 +2735,11 @@ center_title=True,
                         text_align=ft.TextAlign.CENTER,
                     ),
                     ft.Text(
-                        t("guest_desc"),
+                        "공개된 RED 스테이지 출연진",
                         size=layout_body_size(),
                         text_align=ft.TextAlign.CENTER,
                     ),
-                    ft.Text(
-                        t("guest_empty"),
-                        size=layout_small_size(),
-                        color="#666666",
-                        text_align=ft.TextAlign.CENTER,
-                    ),
+                    *guest_preview_controls,
                 ],
             ),
         )
@@ -2609,32 +2747,29 @@ center_title=True,
         # 스테이지 카드
         stage_card = ft.Container(
             width=float("inf"),
+            height=layout_home_card_height(),
             padding=layout_card_padding(),
             border_radius=18,
             bgcolor="#F5F5F5",
             on_click=lambda e: change_page(index=2),
             content=ft.Column(
-                spacing=8,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
+                expand=True,
+                spacing=6,
+                scroll=ft.ScrollMode.AUTO,
                 controls=[
                     ft.Text(
-                        f"🎤 {t('stage_card')}",
+                        f"🎤 {t('stage_card')} · RED",
                         size=layout_home_card_title_size(),
                         weight=ft.FontWeight.BOLD,
                         text_align=ft.TextAlign.CENTER,
                     ),
                     ft.Text(
-                        t("stage_desc"),
+                        "RED 스테이지 주요 일정",
                         size=layout_body_size(),
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        t("stage_empty"),
-                        size=layout_small_size(),
                         color="#666666",
                         text_align=ft.TextAlign.CENTER,
                     ),
+                    *stage_preview_controls,
                 ],
             ),
         )
@@ -2742,7 +2877,7 @@ center_title=True,
                                 controls=[
                                     ft.Text(
                                         announcement["title"],
-                                        size=layout_home_card_title_size(),
+                                        size=layout_home_card_title_size() + 2,
                                         weight=ft.FontWeight.BOLD,
                                     ),
                                     ft.Button(
@@ -2764,7 +2899,7 @@ center_title=True,
                                                 expand=1,
                                                 content=ft.Text(
                                                     "• " + name,
-                                                    size=layout_small_size(),
+                                                    size=layout_small_size() + 2,
                                                     color="#444444",
                                                 ),
                                             )
@@ -3903,69 +4038,39 @@ center_title=True,
                         )
                     )
 
-            def build_booth_layout():
-                # 화면 폭을 기준으로 배치도 영역도 함께 조절
-                map_height = max(220, min(620, viewport_width() * 0.62))
-
-                if map_file.exists():
-                    return ft.Container(
-                        width=float("inf"),
-                        height=map_height,
-                        alignment=ft.Alignment.CENTER,
-                        border_radius=12,
-                        bgcolor="#FFFFFF",
-                        content=ft.Image(
-                            src=map_file.read_bytes(),
-                            width=float("inf"),
-                            height=float("inf"),
-                            fit=ft.BoxFit.CONTAIN,
-                            error_content=ft.Column(
-                                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                                alignment=ft.MainAxisAlignment.CENTER,
-                                controls=[
-                                    ft.Icon(
-                                        ft.Icons.MAP_OUTLINED,
-                                        size=max(38, min(50, viewport_width() * 0.11)),
-                                    ),
-                                    ft.Text(
-                                        "배치도 이미지를 불러오지 못했습니다.",
-                                        size=15,
-                                    ),
-                                ],
-                            ),
+            # 공식 배치도 이미지는 사용하지 않고 텍스트로 안내
+            map_view = ft.Container(
+                width=float("inf"),
+                padding=layout_card_padding(),
+                border_radius=12,
+                bgcolor="#F5F5F5",
+                content=ft.Column(
+                    tight=True,
+                    spacing=8,
+                    horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                    controls=[
+                        ft.Icon(
+                            ft.Icons.INFO_OUTLINE,
+                            size=30,
+                            color="#666666",
                         ),
-                    )
-                else:
-                    return ft.Container(
-                        width=float("inf"),
-                        height=map_height,
-                        alignment=ft.Alignment.CENTER,
-                        border_radius=12,
-                        bgcolor="#FFFFFF",
-                        content=ft.Column(
-                            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=8,
-                            controls=[
-                                ft.Icon(
-                                    ft.Icons.MAP_OUTLINED,
-                                    size=max(42, min(55, viewport_width() * 0.12)),
-                                ),
-                                ft.Text(
-                                    "AGF 2026 부스 배치도",
-                                    size=layout_home_card_title_size() - 1,
-                                    weight=ft.FontWeight.BOLD,
-                                ),
-                                ft.Text(
-                                    "실제 배치도 공개 후 업데이트 예정",
-                                    size=layout_small_size(),
-                                    color="#666666",
-                                ),
-                            ],
+                        ft.Text(
+                            "공식 배치도 이미지는 사용하지 않습니다.",
+                            size=layout_body_size(),
+                            weight=ft.FontWeight.BOLD,
+                            text_align=ft.TextAlign.CENTER,
                         ),
-                    )
-
-            map_view = build_booth_layout()
+                        ft.Text(
+                            "공식 채널에서 공개된 참가사명과 "
+                            "부스 번호만 텍스트로 안내합니다.\n"
+                            "공개되지 않은 부스 번호는 임의로 지정하지 않습니다.",
+                            size=layout_small_size(),
+                            color="#666666",
+                            text_align=ft.TextAlign.CENTER,
+                        ),
+                    ],
+                ),
+            )
 
             content_area.content = ft.Column(
                 expand=True,
@@ -4197,4 +4302,3 @@ if __name__ == "__main__":
     ft.run(main)
 else:
     app = ft.run(main, export_asgi_app=True)
-
