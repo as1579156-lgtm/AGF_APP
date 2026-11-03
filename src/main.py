@@ -127,6 +127,58 @@ PUBLIC_PARTICIPANT_ANNOUNCEMENTS = [
             "MW:MEU",
         ],
     },
+    {
+        "title": "9차 공개",
+        "url": "https://x.com/AGF_Korea/status/2115609562392736136",
+        "names": [
+            "페이트/그랜드 오더",
+            "아크시스템웍스 아시아",
+            "(주)소미미디어",
+            "밸로프",
+            "하비프러스",
+            "플로토이",
+            "animate KOREA",
+            "대원미디어 그룹",
+        ],
+    },
+    {
+        "title": "10차 공개",
+        "url": "https://x.com/AGF_Korea/status/2115971951953055901",
+        "names": [
+            "SBS아카데미 게임학원",
+            "한국영상대학교 만화웹툰콘텐츠과",
+            "배재대학교 게임애니메이션전공",
+            "콘텐츠 인재들의 부트캠프, GCC사관학교",
+            "민화",
+            "국경없는의사회",
+        ],
+    },
+    {
+        "title": "11차 공개",
+        "url": "https://x.com/AGF_Korea/status/2117059120629195093",
+        "names": [
+            "hololive Dreams",
+            "viviON",
+            "Hakuhodo DY Music & Pictures Inc.",
+            "Bushiroad",
+            "Minboo LTD",
+            "탭웨이브",
+        ],
+    },
+    {
+        "title": "12차 공개",
+        "url": "https://x.com/AGF_Korea/status/2117421502215905377",
+        "names": [
+            "스마일게이트 희망스튜디오",
+            "애니프릭스",
+            "주식회사 에어캡",
+            "KADOKAWA",
+            "Japan Pavilion",
+            "노벨피아",
+            "주식회사 와이앤케이미디어",
+            "위프",
+        ],
+    },
 ]
 
 # 공개된 참가사를 부스 화면에 표시합니다.
@@ -576,9 +628,10 @@ def main(page: ft.Page):
             "sns_error": "SNS 소식을 불러오지 못했습니다.",
             "ticket": "티켓 예매",
             "ticket_desc": "AGF 2026 티켓 예매 일정",
-            "ticket_earlybird": "얼리버드: 10월 14일(수) ~ 11월 11일(수)",
-            "ticket_fast": "패스트 티켓: 10월 14일(수) 10:00 ~ 소진 시",
-            "ticket_general": "일반 티켓: 11월 12일(목) ~",
+            "ticket_earlybird": "얼리버드 (10/14~11/11): 1일권 24,000원 · 3일권 55,000원",
+            "ticket_fast": "패스트 티켓: 50,000원 · 하루 1,000매 한정 · 입장 09:30~",
+            "ticket_general": "일반 예매 (11/12~12/6): 1일권 29,000원 · 3일권 65,000원",
+            "ticket_red_stage": "RED 스테이지 예매: 11/20(금) 18:00~ · 입장권 소지자 무료",
             "sponsor": "메인 스폰서 & 스폰서",
             "sponsor_desc": "AGF 2026의 메인 스폰서와 참가 스폰서를 확인하세요.",
             "sponsor_empty": "메인 스폰서\n엔씨(NC)\n\n스폰서\n갤럭시 스토어 · SOOP · 엘리멘타 · 메가박스 · 컬쳐랜드",
@@ -718,9 +771,10 @@ def main(page: ft.Page):
             "sns_error": "Failed to load SNS updates.",
             "ticket": "Tickets",
             "ticket_desc": "AGF 2026 Ticket Schedule",
-            "ticket_earlybird": "Early Bird: Oct 14 (Wed) ~ Nov 11 (Wed)",
-            "ticket_fast": "Fast Ticket: Oct 14 (Wed) 10:00 ~ while supplies last",
-            "ticket_general": "General Tickets: Nov 12 (Thu) ~",
+            "ticket_earlybird": "Early Bird (Oct 14-Nov 11): 1-Day ₩24,000 · 3-Day ₩55,000",
+            "ticket_fast": "Fast Ticket: ₩50,000 · 1,000 per day · Entry from 9:30 AM",
+            "ticket_general": "General (Nov 12-Dec 6): 1-Day ₩29,000 · 3-Day ₩65,000",
+            "ticket_red_stage": "RED Stage: Reservations Nov 20, 6 PM · Free with AGF admission ticket",
             "sponsor": "Main Sponsors & Sponsors",
             "sponsor_desc": "Check the main sponsors and participating sponsors of AGF 2026.",
             "sponsor_empty": "Main Sponsor\nNC\n\nSponsors\nGalaxy Store · SOOP · Elimenta · Megabox · Cultureland",
@@ -860,9 +914,10 @@ def main(page: ft.Page):
             "sns_error": "SNS情報を読み込めませんでした。",
             "ticket": "チケット予約",
             "ticket_desc": "AGF 2026 チケット販売日程",
-            "ticket_earlybird": "早期割引: 10月14日(水) ～ 11月11日(水)",
-            "ticket_fast": "ファストチケット: 10月14日(水) 10:00 ～ 売り切れまで",
-            "ticket_general": "一般チケット: 11月12日(木) ～",
+            "ticket_earlybird": "早期割引 (10/14～11/11): 1日券 24,000ウォン · 3日券 55,000ウォン",
+            "ticket_fast": "ファストチケット: 50,000ウォン · 1日1,000枚限定 · 入場9:30～",
+            "ticket_general": "一般販売 (11/12～12/6): 1日券 29,000ウォン · 3日券 65,000ウォン",
+            "ticket_red_stage": "REDステージ予約: 11/20 18:00～ · AGF入場券所持者は無料",
             "sponsor": "メインスポンサー＆スポンサー",
             "sponsor_desc": "AGF 2026のメインスポンサーと参加スポンサーを確認してください。",
             "sponsor_empty": "メインスポンサー\nNC\n\nスポンサー\nGalaxy Store・SOOP・Elimenta・Megabox・Cultureland",
@@ -1165,7 +1220,6 @@ def main(page: ft.Page):
 
         navigation.destinations[0].label = t("home")
         navigation.destinations[1].label = t("news")
-        navigation.destinations[2].label = t("stage")
         navigation.destinations[3].label = t("booth")
         navigation.destinations[4].label = t("settings")
 
@@ -1545,7 +1599,7 @@ center_title=True,
 
     async def app_settings_clicked(e):
         await page.close_end_drawer()
-        navigation.selected_index = 4
+        navigation.selected_index = 3
         change_page(index=4)
 
     def build_drawer():
@@ -2335,18 +2389,13 @@ center_title=True,
                 label=t("news"),
             ),
             ft.NavigationBarDestination(
-                icon=ft.Icons.MIC_OUTLINED,
-                selected_icon=ft.Icons.MIC,
-                label=t("stage"),
-            ),
-            ft.NavigationBarDestination(
                 icon=ft.Icons.STORE_OUTLINED,
                 selected_icon=ft.Icons.STORE,
                 label=t("booth"),
             ),
             ft.NavigationBarDestination(
                 icon=ft.Icons.SETTINGS_OUTLINED,
-                selected_icon=ft.Icons.SETTINGS,
+                selected_icon=ft.Icons.SETTINGS,	
                 label=t("settings"),
             ),
         ],
@@ -2440,48 +2489,185 @@ center_title=True,
         page.update()
 
     def build_home_view():
-        # SNS 최신 소식
-        home_sns = ft.Container(
-            margin=ft.Margin(
-                left=layout_side_padding(),
-                right=layout_side_padding(),
-                top=max(8, layout_card_padding() - 2),
-                bottom=max(6, layout_card_padding() - 4),
-            ),
+        # 행사 소개
+        event_header = ft.Container(
+            expand=1,
+            height=160,
+            padding=layout_card_padding(),
+            border_radius=16,
+            bgcolor="#F5F5F5",
             content=ft.Column(
-                spacing=8,
+                spacing=5,
                 controls=[
-                    ft.Row(
-                        alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                        controls=[
-                            ft.Text(
-                                f"📱 {t('latest_sns')}",
-                                size=layout_home_card_title_size() + 2,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.TextButton(
-                                t("view_all"),
-                                on_click=lambda e: change_page(index=1),
-                            ),
-                        ],
+                    ft.Text(
+                        "Anime X Game Festival",
+                        size=layout_home_card_title_size(),
+                        weight=ft.FontWeight.BOLD,
                     ),
-                    home_sns_content,
+                    ft.Text(
+                        "2026.12.04 – 12.06  ·  KINTEX 제1전시장",
+                        size=layout_body_size(),
+                        color="#666666",
+                    ),
                 ],
             ),
         )
 
-        # 티켓 카드
-        ticket_card = ft.Container(
-            margin=ft.Margin(
-                left=layout_side_padding(),
-                right=layout_side_padding(),
-                top=max(6, layout_card_padding() - 6),
-                bottom=max(6, layout_card_padding() - 6),
+        # D-Day 및 공식 SNS
+        dday_card = ft.Container(
+            expand=1,
+            padding=layout_card_padding(),
+            border_radius=14,
+            bgcolor="#FFF0CC",
+            content=ft.Column(
+                alignment=ft.MainAxisAlignment.CENTER,
+                spacing=5,
+                controls=[
+                    ft.Text(
+                        "AGF 2026",
+                        size=layout_body_size(),
+                        color="#8A4B08",
+                    ),
+                    ft.Text(
+                        dday_text,
+                        size=layout_home_card_title_size() + 5,
+                        weight=ft.FontWeight.BOLD,
+                        color="#8A4B08",
+                    ),
+                    ft.Text(
+                        "행사 일정까지",
+                        size=layout_small_size(),
+                        color="#8A4B08",
+                    ),
+                ],
             ),
+        )
+
+        sns_card = ft.Container(
+            expand=1,
+            padding=layout_card_padding(),
+            border_radius=14,
+            bgcolor="#EAF0F8",
+            content=ft.Column(
+                spacing=6,
+                controls=[
+                    ft.Text(
+                        "공식 SNS",
+                        size=layout_body_size() + 1,
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Container(
+                        padding=6,
+                        border_radius=8,
+                        bgcolor="#FFFFFF",
+                        url="https://x.com/AGF_Korea",
+                        content=ft.Row(
+                            spacing=6,
+                            controls=[
+                                ft.Icon(
+                                    ft.Icons.OPEN_IN_NEW,
+                                    size=15,
+                                ),
+                                ft.Text(
+                                    "공식 X",
+                                    size=layout_small_size(),
+                                ),
+                            ],
+                        ),
+                    ),
+                    ft.Container(
+                        padding=6,
+                        border_radius=8,
+                        bgcolor="#FFFFFF",
+                        url="https://www.instagram.com/agf_korea/",
+                        content=ft.Row(
+                            spacing=6,
+                            controls=[
+                                ft.Icon(
+                                    ft.Icons.OPEN_IN_NEW,
+                                    size=15,
+                                ),
+                                ft.Text(
+                                    "Instagram",
+                                    size=layout_small_size(),
+                                ),
+                            ],
+                        ),
+                    ),
+                ],
+            ),
+        )
+
+        dday_sns_section = ft.Row(
+            spacing=8,
+            controls=[
+                dday_card,
+                sns_card,
+            ],
+        )
+
+        # 바로가기 카드
+        def build_shortcut(
+            emoji,
+            title,
+            description,
+            bgcolor,
+            on_click,
+        ):
+            return ft.Container(
+                expand=1,
+                padding=layout_card_padding(),
+                border_radius=14,
+                bgcolor=bgcolor,
+                on_click=on_click,
+                content=ft.Column(
+                    spacing=5,
+                    controls=[
+                        ft.Text(
+                            emoji,
+                            size=26,
+                        ),
+                        ft.Text(
+                            title,
+                            size=layout_home_card_title_size() - 2,
+                            weight=ft.FontWeight.BOLD,
+                        ),
+                        ft.Text(
+                            description,
+                            size=layout_small_size(),
+                            color="#555555",
+                        ),
+                    ],
+                ),
+            )
+
+        shortcut_section = ft.Row(
+            spacing=8,
+            controls=[
+                build_shortcut(
+                    "🎤",
+                    "게스트",
+                    "공개된 게스트 확인",
+                    "#EEE5FF",
+                    open_guest_news,
+                ),
+                build_shortcut(
+                    "🏢",
+                    "참가사",
+                    "참가사 목록 확인",
+                    "#DFEBFF",
+                    lambda e: change_page(index=3),
+                ),
+            ],
+        )
+
+        # 티켓 예매 카드
+        ticket_card = ft.Container(
+            expand=1,
+            height=160,
             padding=layout_card_padding(),
             border_radius=16,
-            bgcolor="#F5F5F5",
+            bgcolor="#DDF3E8",
             url="https://ticket.melon.com/csoon/detail.htm?csoonId=12858",
             content=ft.Row(
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
@@ -2489,141 +2675,207 @@ center_title=True,
                 controls=[
                     ft.Row(
                         expand=True,
-                        spacing=12,
+                        spacing=10,
                         controls=[
-                            ft.Text("🎟️", size=28),
+                            ft.Text("🎟️", size=30),
                             ft.Column(
                                 expand=True,
-                                spacing=3,
+                                spacing=4,
                                 controls=[
                                     ft.Text(
-                                        t("ticket_desc"),
-                                        size=13,
-                                        color="#666666",
+                                        "티켓 예매",
+                                        size=layout_home_card_title_size(),
+                                        weight=ft.FontWeight.BOLD,
+                                        color="#24754C",
                                     ),
                                     ft.Text(
                                         t("ticket_earlybird"),
-                                        size=16,
-                                        weight=ft.FontWeight.BOLD,
-                                        color="#555555",
+                                        size=layout_small_size(),
                                     ),
                                     ft.Text(
                                         t("ticket_fast"),
-                                        size=16,
-                                        weight=ft.FontWeight.BOLD,
-                                        color="#555555",
+                                        size=layout_small_size(),
                                     ),
                                     ft.Text(
                                         t("ticket_general"),
-                                        size=16,
-                                        weight=ft.FontWeight.BOLD,
-                                        color="#555555",
+                                        size=layout_small_size(),
                                     ),
                                 ],
                             ),
                         ],
                     ),
-                    ft.Row(
-                        spacing=6,
-                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                        controls=[
-                            ft.Text(
-                                t("ticket"),
-                                size=18,
-                                weight=ft.FontWeight.BOLD,
-                            ),
-                            ft.Icon(ft.Icons.ARROW_FORWARD, size=20),
-                        ],
+                    ft.Icon(
+                        ft.Icons.ARROW_FORWARD,
+                        color="#24754C",
+                        size=24,
                     ),
                 ],
             ),
         )
 
-        # 스폰서 카드
-        sponsor_card = ft.Container(
-            width=float("inf"),
-            padding=layout_card_padding(),
-            border_radius=18,
-            bgcolor="#F5F5F5",
-            content=ft.Column(
-                spacing=8,
-                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                alignment=ft.MainAxisAlignment.CENTER,
-                controls=[
-                    ft.Text(
-                        f"⭐ {t('sponsor')}",
-                        size=layout_home_card_title_size(),
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
+        # 새로운 게스트 공개 소식
+        guest_news_items = [
+            item
+            for item in fetch_public_news()
+            if item.get("category") == "공개"
+            and item.get("sub_category") == "게스트"
+        ][:2]
+
+        guest_news_cards = []
+
+        for item in guest_news_items:
+            guest_news_cards.append(
+                ft.Container(
+                    expand=1,
+                    padding=layout_card_padding(),
+                    border_radius=12,
+                    bgcolor="#F3ECFF",
+                    content=ft.Column(
+                        spacing=7,
+                        controls=[
+                            ft.Text(
+                                item.get("title", "게스트 공개"),
+                                size=layout_body_size() + 1,
+                                weight=ft.FontWeight.BOLD,
+                                color="#6339A5",
+                            ),
+                            ft.Text(
+                                item.get("date", ""),
+                                size=layout_small_size(),
+                                color="#666666",
+                            ),
+                            ft.Text(
+                                item.get("description", ""),
+                                size=layout_small_size(),
+                                max_lines=4,
+                                overflow=ft.TextOverflow.ELLIPSIS,
+                            ),
+                            ft.Button(
+                                "공식 발표 보기",
+                                icon=ft.Icons.OPEN_IN_NEW,
+                                url=item["url"],
+                            ),
+                        ],
                     ),
-                    ft.Text(
-                        t("sponsor_desc"),
-                        size=layout_body_size() + 5,
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        t("sponsor_empty"),
-                        size=layout_body_size() + 5,
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
-                        color="#333333",
-                    ),
-                ],
-            ),	
-        )
-
-
-        # RED 스테이지 공개 정보에서 게스트 명단 만들기
-        red_stage_guest_names = []
-
-        for schedules in PUBLIC_RED_STAGE.values():
-            for schedule in schedules:
-                guest_text = str(
-                    schedule.get("guest", "")
-                ).strip()
-
-                if (
-                    not guest_text
-                    or "추후 공개" in guest_text
-                ):
-                    continue
-
-                for guest_name in guest_text.split(" · "):
-                    guest_name = guest_name.strip()
-
-                    if (
-                        guest_name
-                        and guest_name not in red_stage_guest_names
-                    ):
-                        red_stage_guest_names.append(guest_name)
-
-        # RED 스테이지 일정 카드 내용 만들기
-        red_stage_schedule_controls = []
-
-        for stage_date, schedules in PUBLIC_RED_STAGE.items():
-            red_stage_schedule_controls.append(
-                ft.Text(
-                    stage_date,
-                    size=layout_body_size(),
-                    weight=ft.FontWeight.BOLD,
                 )
             )
 
+        if not guest_news_cards:
+            guest_news_cards.append(
+                ft.Text(
+                    "새로운 게스트 공개를 기다리고 있습니다.",
+                    size=layout_body_size(),
+                    color="#666666",
+                )
+            )
+
+        guest_section = ft.Container(
+            padding=layout_card_padding(),
+            border_radius=16,
+            bgcolor="#F8F5FF",
+            content=ft.Column(
+                spacing=10,
+                controls=[
+                    ft.Text(
+                        "🎤 새로운 게스트",
+                        size=layout_home_card_title_size(),
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Row(
+                        spacing=8,
+                        controls=guest_news_cards,
+                    ),
+                ],
+            ),
+        )
+
+        # 최근 참가사 공개 소식: 최신 2개 공개 차수
+        recent_announcements = PUBLIC_PARTICIPANT_ANNOUNCEMENTS[-2:]
+        recent_public_cards = []
+
+        for announcement in recent_announcements:
+            names = announcement["names"]
+            preview_names = " · ".join(names[:3])
+
+            if len(names) > 3:
+                preview_names += f" 외 {len(names) - 3}개"
+
+            recent_public_cards.append(
+                ft.Container(
+                    expand=1,
+                    padding=layout_card_padding(),
+                    border_radius=12,
+                    bgcolor="#E8F0FF",
+                    content=ft.Column(
+                        spacing=7,
+                        controls=[
+                            ft.Text(
+                                announcement["title"],
+                                size=layout_body_size() + 1,
+                                weight=ft.FontWeight.BOLD,
+                                color="#3F63A2",
+                            ),
+                            ft.Text(
+                                preview_names,
+                                size=layout_small_size(),
+                                color="#444444",
+                            ),
+                            ft.Button(
+                                "공식 발표 보기",
+                                icon=ft.Icons.OPEN_IN_NEW,
+                                url=announcement["url"],
+                            ),
+                        ],
+                    ),
+                )
+            )
+
+        recent_public_section = ft.Container(
+            padding=layout_card_padding(),
+            border_radius=16,
+            bgcolor="#F3F6FC",
+            content=ft.Column(
+                spacing=10,
+                controls=[
+                    ft.Text(
+                        "📢 최근 공개 소식",
+                        size=layout_home_card_title_size(),
+                        weight=ft.FontWeight.BOLD,
+                    ),
+                    ft.Row(
+                        spacing=8,
+                        controls=recent_public_cards,
+                    ),
+                ],
+            ),
+        )
+
+        # RED 스테이지 전체 일정
+        red_stage_day_controls = []
+
+        for stage_date, schedules in PUBLIC_RED_STAGE.items():
+            schedule_controls = [
+                ft.Text(
+                    stage_date,
+                    size=layout_body_size() + 1,
+                    weight=ft.FontWeight.BOLD,
+                    color="#AD3434",
+                )
+            ]
+
             for schedule in schedules:
-                red_stage_schedule_controls.append(
+                schedule_controls.append(
                     ft.Container(
-                        padding=8,
+                        padding=10,
                         border_radius=10,
                         bgcolor="#FFFFFF",
                         content=ft.Column(
-                            spacing=3,
-                            tight=True,
+                            spacing=4,
                             controls=[
                                 ft.Text(
-                                    f"{schedule['time']} · "
+                                    f"{schedule['time']}  ·  "
                                     f"{schedule['title']}",
-                                    size=layout_small_size(),
+                                    size=layout_body_size(),
                                     weight=ft.FontWeight.BOLD,
                                 ),
                                 ft.Text(
@@ -2636,331 +2888,98 @@ center_title=True,
                     )
                 )
 
-
-        # 홈 스와이프 카드용 RED 스테이지 주요 일정 3개
-        red_stage_preview = []
-
-        for stage_date, schedules in PUBLIC_RED_STAGE.items():
-            announced_schedules = [
-                schedule
-                for schedule in schedules
-                if schedule.get("title")
-                and "추후 공개" not in schedule.get("title", "")
-            ]
-
-            for schedule in announced_schedules[:2]:
-                red_stage_preview.append((stage_date, schedule))
-
-        red_stage_preview = red_stage_preview[:3]
-
-        # 게스트 카드에 표시할 미리보기
-        guest_preview_controls = []
-
-        for stage_date, schedule in red_stage_preview:
-            guest_preview_controls.append(
+            red_stage_day_controls.append(
                 ft.Container(
-                    padding=8,
-                    border_radius=10,
-                    bgcolor="#FFFFFF",
+                    expand=1,
+                    padding=10,
+                    border_radius=12,
+                    bgcolor="#FFF4F4",
                     content=ft.Column(
-                        spacing=3,
-                        tight=True,
-                        controls=[
-                            ft.Text(
-                                f"{stage_date} · {schedule['title']}",
-                                size=layout_small_size(),
-                                weight=ft.FontWeight.BOLD,
-                                max_lines=1,
-                                overflow=ft.TextOverflow.ELLIPSIS,
-                            ),
-                            ft.Text(
-                                schedule["guest"],
-                                size=layout_small_size(),
-                                color="#555555",
-                                max_lines=2,
-                                overflow=ft.TextOverflow.ELLIPSIS,
-                            ),
-                        ],
+                        spacing=8,
+                        controls=schedule_controls,
                     ),
                 )
             )
 
-        # 스테이지 카드에 표시할 미리보기
-        stage_preview_controls = []
-
-        for stage_date, schedule in red_stage_preview:
-            stage_preview_controls.append(
-                ft.Container(
-                    padding=8,
-                    border_radius=10,
-                    bgcolor="#FFFFFF",
-                    content=ft.Column(
-                        spacing=3,
-                        tight=True,
-                        controls=[
-                            ft.Text(
-                                f"{stage_date} · {schedule['time']}",
-                                size=layout_small_size(),
-                                color="#666666",
-                            ),
-                            ft.Text(
-                                schedule["title"],
-                                size=layout_body_size(),
-                                weight=ft.FontWeight.BOLD,
-                                max_lines=1,
-                                overflow=ft.TextOverflow.ELLIPSIS,
-                            ),
-                        ],
-                    ),
-                )
-            )
-
-        # 게스트 카드
-        guest_card = ft.Container(
-            width=float("inf"),
-            height=layout_home_card_height(),
+        red_stage_section = ft.Container(
             padding=layout_card_padding(),
-            border_radius=18,
-            bgcolor="#F5F5F5",
-            on_click=open_guest_news,
-            content=ft.Column(
-                expand=True,
-                spacing=6,
-                scroll=ft.ScrollMode.AUTO,
-                controls=[
-                    ft.Text(
-                        f"🎤 {t('guest_card')}",
-                        size=layout_home_card_title_size(),
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        "공개된 RED 스테이지 출연진",
-                        size=layout_body_size(),
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    *guest_preview_controls,
-                ],
-            ),
-        )
-
-        # 스테이지 카드
-        stage_card = ft.Container(
-            width=float("inf"),
-            height=layout_home_card_height(),
-            padding=layout_card_padding(),
-            border_radius=18,
-            bgcolor="#F5F5F5",
-            on_click=lambda e: change_page(index=2),
-            content=ft.Column(
-                expand=True,
-                spacing=6,
-                scroll=ft.ScrollMode.AUTO,
-                controls=[
-                    ft.Text(
-                        f"🎤 {t('stage_card')} · RED",
-                        size=layout_home_card_title_size(),
-                        weight=ft.FontWeight.BOLD,
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    ft.Text(
-                        "RED 스테이지 주요 일정",
-                        size=layout_body_size(),
-                        color="#666666",
-                        text_align=ft.TextAlign.CENTER,
-                    ),
-                    *stage_preview_controls,
-                ],
-            ),
-        )
-
-        # 홈 스와이프 영역
-        home_page_view = ft.PageView(
-            height=layout_home_card_height(),
-            viewport_fraction=0.95 if is_mobile_layout() else 0.92,
-            horizontal=True,
-            snap=True,
-            controls=[
-                ft.Container(
-                    width=float("inf"),
-                    alignment=ft.Alignment.CENTER,
-                    content=sponsor_card,
-                ),
-                ft.Container(
-                    width=float("inf"),
-                    alignment=ft.Alignment.CENTER,
-                    content=guest_card,
-                ),
-                ft.Container(
-                    width=float("inf"),
-                    alignment=ft.Alignment.CENTER,
-                    content=stage_card,
-                ),
-            ],
-        )
-
-        async def previous_home_card(e):
-            current = home_page_view.selected_index
-
-            if current > 0:
-                await home_page_view.previous_page(
-                    animation_duration=300,
-                )
-            else:
-                await home_page_view.go_to_page(
-                    2,
-                    animation_duration=300,
-                )
-
-        async def next_home_card(e):
-            current = home_page_view.selected_index
-
-            if current < 2:
-                await home_page_view.next_page(
-                    animation_duration=300,
-                )
-            else:
-                await home_page_view.go_to_page(
-                    0,
-                    animation_duration=300,
-                )
-
-        home_swipe_area = ft.Container(
-            margin=ft.Margin(
-                left=8,
-                right=8,
-                top=8,
-                bottom=12,
-            ),
-            content=ft.Stack(
-                controls=[
-                    home_page_view,
-                    ft.Container(
-                        left=2,
-                        top=74,
-                        content=ft.IconButton(
-                            icon=ft.Icons.CHEVRON_LEFT,
-                            icon_size=max(26, min(34, viewport_width() * 0.075)),
-                            on_click=previous_home_card,
-                        ),
-                    ),
-                    ft.Container(
-                        right=2,
-                        top=74,
-                        content=ft.IconButton(
-                            icon=ft.Icons.CHEVRON_RIGHT,
-                            icon_size=max(26, min(34, viewport_width() * 0.075)),
-                            on_click=next_home_card,
-                        ),
-                    ),
-                ],
-            ),
-        )
-
-        # 메인 화면 공개 참가사 목록
-        participant_announcement_cards = []
-
-        for announcement in PUBLIC_PARTICIPANT_ANNOUNCEMENTS:
-            participant_announcement_cards.append(
-                ft.Container(
-                    padding=layout_card_padding(),
-                    border_radius=16,
-                    bgcolor="#FFFFFF",
-                    content=ft.Column(
-                        spacing=10,
-                        tight=True,
-                        controls=[
-                            ft.Row(
-                                alignment=ft.MainAxisAlignment.START,
-                                vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                spacing=8,
-                                controls=[
-                                    ft.Text(
-                                        announcement["title"],
-                                        size=layout_home_card_title_size() + 2,
-                                        weight=ft.FontWeight.BOLD,
-                                    ),
-                                    ft.Button(
-                                        "공식 발표 보기",
-                                        icon=ft.Icons.OPEN_IN_NEW,
-                                        url=announcement["url"],
-                                    ),
-                                ],
-                            ),
-                            ft.Column(
-                                spacing=6,
-                                tight=True,
-                                controls=[
-                                    ft.Row(
-                                        spacing=8,
-                                        vertical_alignment=ft.CrossAxisAlignment.CENTER,
-                                        controls=[
-                                            ft.Container(
-                                                expand=1,
-                                                content=ft.Text(
-                                                    "• " + name,
-                                                    size=layout_small_size() + 2,
-                                                    color="#444444",
-                                                ),
-                                            )
-                                            for name in announcement["names"][
-                                                row_start:row_start + 3
-                                            ]
-                                        ],
-                                    )
-                                    for row_start in range(
-                                        0,
-                                        len(announcement["names"]),
-                                        3,
-                                    )
-                                ],
-                            ),
-                        ],
-                    ),
-                )
-            )
-
-        public_participant_section = ft.Container(
-            margin=ft.Margin(
-                left=layout_side_padding(),
-                right=layout_side_padding(),
-                top=0,
-                bottom=max(8, layout_card_padding() - 2),
-            ),
-            padding=layout_card_padding(),
-            border_radius=18,
-            bgcolor="#F5F5F5",
+            border_radius=16,
+            bgcolor="#FFE4E4",
             content=ft.Column(
                 spacing=10,
                 controls=[
                     ft.Text(
-                        t("public_participant_title"),
-                        size=layout_home_card_title_size() - 2,
+                        "🔴 RED STAGE",
+                        size=layout_home_card_title_size(),
                         weight=ft.FontWeight.BOLD,
+                        color="#AD3434",
                     ),
                     ft.Text(
-                        "공식 발표 차수별 참가사 목록입니다. "
-                        "부스 번호와 배치도는 포함하지 않습니다.",
+                        "공식 발표된 전체 일정",
                         size=layout_small_size(),
-                        color="#666666",
+                        color="#8C4444",
                     ),
-                    ft.Column(
+                    ft.Row(
                         spacing=8,
-                        controls=participant_announcement_cards,
+                        vertical_alignment=ft.CrossAxisAlignment.START,
+                        controls=red_stage_day_controls,
                     ),
                 ],
             ),
         )
-        return ft.Column(
-            expand=True,
-            scroll=ft.ScrollMode.AUTO,
-            spacing=0,
-            controls=[
-                home_swipe_area,
-                ticket_card,
-                home_sns,
-                public_participant_section,
-            ],
+
+        # BLUE 스테이지 일정
+        blue_stage_section = ft.Container(
+            padding=layout_card_padding(),
+            border_radius=16,
+            bgcolor="#DFEBFF",
+            content=ft.Column(
+                spacing=8,
+                controls=[
+                    ft.Text(
+                        "🔵 BLUE STAGE",
+                        size=layout_home_card_title_size(),
+                        weight=ft.FontWeight.BOLD,
+                        color="#2856A0",
+                    ),
+                    ft.Text(
+                        "BLUE 스테이지 상세 일정은 "
+                        "공식 발표를 기다리고 있습니다.",
+                        size=layout_body_size(),
+                        color="#3F63A2",
+                    ),
+                ],
+            ),
+        )
+
+        # 최종 홈 화면
+        return ft.Container(
+            padding=ft.Padding(
+                left=layout_side_padding(),
+                right=layout_side_padding(),
+                top=12,
+                bottom=layout_card_padding(),
+            ),
+            content=ft.Column(
+                expand=True,
+                scroll=ft.ScrollMode.AUTO,
+                spacing=12,
+                controls=[
+                    ft.Row(
+                        spacing=8,
+                        controls=[
+                            event_header,
+                            ticket_card,
+                        ],
+                    ),
+                    dday_sns_section,
+                    shortcut_section,
+                    guest_section,
+                    recent_public_section,
+                    red_stage_section,
+                    blue_stage_section,
+                ],
+            ),
         )
 
     # 뉴스 하위 카테고리 영역
@@ -2970,7 +2989,7 @@ center_title=True,
     # ==============================
     # 뉴스 상단 / 하위 카테고리
     # ==============================
-    def news_tab_changed(e=None, selected_index=0):
+    def news_tab_changed(e=None, selected_index=0, public_sub_index=0):
         nonlocal news_category, news_sub_category
 
         categories = [
@@ -3030,7 +3049,9 @@ center_title=True,
             )
 
         elif news_category == "공개":
-            news_sub_category = "게스트"
+            news_sub_category = (
+                "참가사" if public_sub_index == 1 else "게스트"
+            )
 
             def public_sub_changed(e):
                 nonlocal news_sub_category
@@ -3044,7 +3065,7 @@ center_title=True,
 
             news_subcategory_area.content = ft.Tabs(
                 length=2,
-                selected_index=0,
+                selected_index=public_sub_index,
                 on_change=public_sub_changed,
                 content=ft.Column(
                     controls=[
@@ -3065,9 +3086,7 @@ center_title=True,
                             ),
                             tabs=[
                                 ft.Tab(label=t("guest")),
-                                ft.Tab(
-                                    label=t("participant")
-                                ),
+                                ft.Tab(label=t("participant")),
                             ],
                         ),
                     ],
@@ -3085,10 +3104,29 @@ center_title=True,
         nonlocal news_tabs_control
 
         if index is None:
-            index = e.control.selected_index
+            navigation_page_map = {
+                0: 0,  # 홈
+                1: 1,  # 뉴스
+                2: 3,  # 부스
+                3: 4,  # 설정
+            }
+            index = navigation_page_map.get(
+                e.control.selected_index,
+                0,
+            )
 
         current_index = index
-        navigation.selected_index = index
+
+        page_navigation_map = {
+            0: 0,  # 홈
+            1: 1,  # 뉴스
+            3: 2,  # 부스
+            4: 3,  # 설정
+        }
+        navigation.selected_index = page_navigation_map.get(
+            index,
+            0,
+        )
         set_appbar(index)
 
         if index == 0:
@@ -4213,6 +4251,19 @@ center_title=True,
 
         news_tab_changed(
             selected_index=1
+        )
+
+        page.update()
+
+    # 홈 참가사 카드 → 뉴스 > 공개 > 참가사
+    def open_participant_news(e):
+        change_page(index=1)
+
+        news_tabs_control.selected_index = 1
+
+        news_tab_changed(
+            selected_index=1,
+            public_sub_index=1,
         )
 
         page.update()
