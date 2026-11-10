@@ -700,6 +700,8 @@ def main(page: ft.Page):
             "search_empty": "검색 결과가 없습니다.",
             "booth_map": "부스 & 배치도",
             "booth_map_desc": "부스 번호와 참가사를 확인할 수 있습니다.",
+            "booth_map_notice_title": "공식 배치도 이미지는 사용하지 않습니다.",
+            "booth_map_notice_desc": "공식 채널에서 공개된 참가사명과 부스 번호만 텍스트로 안내합니다.\n공개되지 않은 부스 번호는 임의로 지정하지 않습니다.",
             "booth_list": "부스 목록",
             "booth_empty": "공식 참가사 및 부스 정보가 아직 공개되지 않았습니다.",
             "booth_update": "※ 실제 배치도와 참가사 정보 공개 후 업데이트됩니다.",
@@ -843,6 +845,8 @@ def main(page: ft.Page):
             "search_empty": "No search results.",
             "booth_map": "Booths & Floor Map",
             "booth_map_desc": "Check booth numbers and participants.",
+            "booth_map_notice_title": "Official floor plan images are not used.",
+            "booth_map_notice_desc": "Only participant names and booth numbers published through official channels are shown as text.\nBooth numbers that have not been announced will not be assigned.",
             "booth_list": "Booth List",
             "booth_empty": "Official participant and booth information has not been released yet.",
             "booth_update": "※ The actual floor map and participant information will be updated after official release.",
@@ -986,6 +990,8 @@ def main(page: ft.Page):
             "search_empty": "検索結果はありません。",
             "booth_map": "ブース＆会場マップ",
             "booth_map_desc": "ブース番号と参加者を確認できます。",
+            "booth_map_notice_title": "公式会場マップ画像は使用しません。",
+            "booth_map_notice_desc": "公式チャンネルで公開された参加者名とブース番号のみをテキストで案内します。\n未公開のブース番号を任意に割り当てることはありません。",
             "booth_list": "ブース一覧",
             "booth_empty": "公式参加者およびブース情報はまだ公開されていません。",
             "booth_update": "※ 実際の会場マップと参加者情報は公式公開後に更新します。",
@@ -1212,6 +1218,9 @@ def main(page: ft.Page):
     def apply_language(language):
         nonlocal current_language
 
+        if language not in TRANSLATIONS:
+            language = "한국어"
+
         current_language = language
         save_settings()
 
@@ -1220,24 +1229,11 @@ def main(page: ft.Page):
 
         navigation.destinations[0].label = t("home")
         navigation.destinations[1].label = t("news")
-        navigation.destinations[3].label = t("booth")
-        navigation.destinations[4].label = t("settings")
+        navigation.destinations[2].label = t("booth")
+        navigation.destinations[3].label = t("settings")
 
-        set_appbar(current_index)
-
-        if current_index == 0:
-            content_area.content = build_home_view()
-            refresh_home_sns()
-        elif current_index == 1:
-            change_page(index=1)
-        elif current_index == 2:
-            change_page(index=2)
-        elif current_index == 3:
-            change_page(index=3)
-        elif current_index == 4:
-            content_area.content = more_view()
-
-        page.update()
+        # 현재 열려 있는 화면을 새 언어로 다시 구성합니다.
+        change_page(index=current_index)
 
     def get_language_code():
         language_codes = {
@@ -4093,15 +4089,13 @@ center_title=True,
                             color="#666666",
                         ),
                         ft.Text(
-                            "공식 배치도 이미지는 사용하지 않습니다.",
+                            t("booth_map_notice_title"),
                             size=layout_body_size(),
                             weight=ft.FontWeight.BOLD,
                             text_align=ft.TextAlign.CENTER,
                         ),
                         ft.Text(
-                            "공식 채널에서 공개된 참가사명과 "
-                            "부스 번호만 텍스트로 안내합니다.\n"
-                            "공개되지 않은 부스 번호는 임의로 지정하지 않습니다.",
+                            t("booth_map_notice_desc"),
                             size=layout_small_size(),
                             color="#666666",
                             text_align=ft.TextAlign.CENTER,
