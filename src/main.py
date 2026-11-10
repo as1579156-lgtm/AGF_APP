@@ -481,7 +481,7 @@ def main(page: ft.Page):
             controls=[
                 ft.TabBar(
                     scrollable=True,
-                    tab_alignment=ft.TabAlignment.FILL,
+                    tab_alignment=ft.TabAlignment.START,
                     indicator_thickness=3,
                     tabs=[
                         ft.Tab(label="티켓"),
