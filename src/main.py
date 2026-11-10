@@ -255,24 +255,6 @@ PUBLIC_RED_STAGE = {
     ],
 }
 
-# 참가사 공개 및 임시 확인된 BLUE 스테이지 일정
-PUBLIC_BLUE_STAGE = {
-    "12월 4일(금)": [
-        {
-            "time": "14:15~15:00",
-            "title": "MW:MEU (뮤)",
-            "guest": "MW:MEU",
-        },
-    ],
-    "12월 6일(일)": [
-        {
-            "time": "13:50~14:40",
-            "title": "리레볼루션 (임시)",
-            "guest": "잭 · 오뉴 · 제미니",
-        },
-    ],
-}
-
 # 배치도 파일
 map_file = (
     Path(__file__).resolve().parent.parent
