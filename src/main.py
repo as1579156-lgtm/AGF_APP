@@ -248,7 +248,7 @@ OFFICIAL_X_URL = "https://x.com/AGF_Korea"
 
 def make_panel(content, bgcolor="#FFFFFF"):
     return ft.Container(
-        margin=12,
+        margin=ft.Margin(left=12, right=12, top=0, bottom=12),
         padding=16,
         border_radius=14,
         bgcolor=bgcolor,
@@ -340,7 +340,7 @@ def main(page: ft.Page):
                             "\n".join(f"• {name}" for name in announcement["names"]),
                             size=14,
                         ),
-                        ft.TextButton(
+                        ft.Button(
                             "공식 발표 원문 보기",
                             icon=ft.Icons.OPEN_IN_NEW,
                             url=announcement["url"],
@@ -422,7 +422,7 @@ def main(page: ft.Page):
         controls.append(
             ft.Container(
                 padding=ft.Padding(left=14, right=14, top=0, bottom=12),
-                content=ft.TextButton(
+                content=ft.Button(
                     "RED 스테이지 공식 발표 원문",
                     icon=ft.Icons.OPEN_IN_NEW,
                     url=RED_STAGE_SOURCE_URL,
@@ -459,7 +459,7 @@ def main(page: ft.Page):
                             size=13,
                             color="#666666",
                         ),
-                        ft.TextButton(
+                        ft.Button(
                             "AGF Korea 공식 X 확인",
                             icon=ft.Icons.OPEN_IN_NEW,
                             url=OFFICIAL_X_URL,
